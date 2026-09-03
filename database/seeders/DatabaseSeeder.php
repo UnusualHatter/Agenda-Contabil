@@ -1,0 +1,25 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class DatabaseSeeder extends Seeder
+{
+    use WithoutModelEvents;
+
+    /**
+     * Seed the application's database.
+     *
+     * Seeders must stay idempotent: running them twice may not duplicate rows.
+     */
+    public function run(): void
+    {
+        $this->call([
+            DevelopmentUserSeeder::class,
+        ]);
+    }
+}
