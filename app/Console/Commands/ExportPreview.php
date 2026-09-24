@@ -49,7 +49,10 @@ final class ExportPreview extends Command
             return self::FAILURE;
         }
 
+        // Internal requests are plain HTTP; links must carry the scheme of the
+        // published address, or an HTTPS page would point at HTTP ones.
         URL::forceRootUrl($base);
+        URL::forceScheme((string) parse_url($base, PHP_URL_SCHEME));
         URL::useAssetOrigin($base);
 
         $files->deleteDirectory($output);
