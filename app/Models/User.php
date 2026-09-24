@@ -52,4 +52,15 @@ class User extends Authenticatable
     {
         $query->where('active', true);
     }
+
+    /**
+     * Users who may own appointments; mirrors the check in
+     * EnsureResponsibleIsAvailable.
+     *
+     * @param  Builder<User>  $query
+     */
+    public function scopeAssignable(Builder $query): void
+    {
+        $query->where('active', true)->where('role', '!=', UserRole::Viewer);
+    }
 }

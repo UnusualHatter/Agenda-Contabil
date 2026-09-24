@@ -1,30 +1,26 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
     <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-
-        <title>{{ config('app.name', 'Laravel') }}</title>
-
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @include('layouts.partials.head')
     </head>
-    <body class="font-sans text-gray-900 antialiased">
-        <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">
-            <div>
-                <a href="/">
-                    <x-application-logo class="w-20 h-20 fill-current text-gray-500" />
-                </a>
+    <body>
+        <div class="mx-auto grid min-h-screen max-w-6xl gap-10 px-4 py-8 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:items-center lg:gap-16 lg:px-8">
+            <div class="flex items-center justify-between gap-4 lg:col-span-2 lg:self-start">
+                <a href="/"><x-brand /></a>
+                <x-theme-toggle />
             </div>
 
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
+            <section class="order-last max-w-xl lg:order-none">
+                <p class="text-sm uppercase tracking-[0.18em] text-clay">{{ __('brand.project') }}</p>
+                <h1 class="mt-4 text-4xl leading-tight sm:text-5xl">{{ __('brand.headline') }}</h1>
+                <p class="mt-6 text-lg leading-relaxed text-ink-muted">{{ __('brand.objective') }}</p>
+                <p class="mt-6 border-t border-line pt-6 text-sm leading-relaxed text-ink-muted">{{ __('brand.services') }}</p>
+            </section>
+
+            <section class="w-full rounded-[1.75rem] border border-line bg-surface p-6 shadow-xl shadow-shade/5 sm:p-10 lg:self-start">
                 {{ $slot }}
-            </div>
+            </section>
         </div>
+        @livewireScriptConfig
     </body>
 </html>

@@ -286,5 +286,20 @@ return [
         'winner' => 'ganhador',
         'work' => 'trabalho',
         'year' => 'ano',
+
+        // Agenda de Atendimentos
+        'client_id' => 'atendido',
+        'service_id' => 'serviço',
+        'service_details' => 'descrição da demanda',
+        'responsible_user_id' => 'responsável',
+        'start_time' => 'horário inicial',
+        'end_time' => 'horário final',
+        'starts_at' => 'início',
+        'ends_at' => 'fim',
+        'location_type' => 'tipo de local',
+        'location' => 'local',
+        'notes' => 'observações',
+        'trade_name' => 'nome fantasia',
+        'document' => 'CPF/CNPJ',
     ],
 ];

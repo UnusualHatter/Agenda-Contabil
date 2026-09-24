@@ -12,9 +12,15 @@ Requisitos completos: [`PRD.md`](PRD.md).
 
 ## Status
 
-**Milestone 0 — bootstrap** concluído: aplicação sobe, autentica e a CI passa.
-O domínio (atendidos, serviços, atendimentos) começa no Milestone 1. Ver
-[`docs/architecture.md`](docs/architecture.md).
+**Milestones 1 a 3** concluídos: domínio (atendidos, catálogo com checklist de
+documentos, conflito de horário garantido também pelo banco, status e
+auditoria), telas operacionais e agenda com FullCalendar (mês, semana, dia e
+lista; clicar para agendar, arrastar para reagendar). Tema claro/escuro.
+Ver [`docs/architecture.md`](docs/architecture.md).
+
+Em desenvolvimento, `php artisan migrate:fresh --seed` também cria uma agenda
+de demonstração com duas semanas de atendimentos ao redor da data atual
+(`DemoAgendaSeeder`, nunca roda em produção).
 
 ## Requisitos
 

@@ -49,7 +49,7 @@ Resumo da seção 27 do PRD:
 
 ## Definition of Done
 
-Uma feature só está pronta quando (PRD, seção 32):
+Uma feature só está pronta quando (PRD, seção 31):
 
 - [ ] comportamento implementado;
 - [ ] validações existem;

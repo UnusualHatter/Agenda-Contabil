@@ -8,10 +8,6 @@ use App\Support\DisplayTimezone;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
 
-/**
- * Covers the timezone strategy documented in
- * docs/decisions/0001-timezone-strategy.md.
- */
 class DisplayTimezoneTest extends TestCase
 {
     public function test_the_application_persists_timestamps_in_utc(): void

@@ -1,4 +1,6 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/fraunces/soft.css';
+@import '@fontsource-variable/literata/opsz.css';
 
 @plugin '@tailwindcss/forms';
 
@@ -6,8 +8,623 @@
 @source '../../storage/framework/views/*.php';
 @source '../../resources/views/**/*.blade.php';
 
-@theme {
-    --font-sans:
-        'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+/*
+ * The theme is chosen by resources/views/layouts/partials/theme.blade.php,
+ * which sets data-theme on <html> before the first paint.
+ */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
+
+/*
+ * Palette: warm paper and bark neutrals, a teal taken from the project's
+ * printed material, and earth tones. Each tone has a "-soft" partner for
+ * backgrounds: pale in the light theme, deep in the dark one. Every tone is
+ * at least 4.5:1 on its own soft, on surface and on canvas.
+ */
+:root {
+    color-scheme: light;
+
+    --canvas: #f6f1e9;
+    --surface: #fffcf7;
+    --sunken: #efe7db;
+    --sand: #f1e2cb;
+    --line: #e2d7c7;
+    --ink: #2a241f;
+    --ink-muted: #6b5f55;
+
+    --primary: #2f6b6a;
+    --primary-hover: #25595a;
+    --primary-soft: #dcebe7;
+    --on-primary: #fffcf7;
+
+    --moss: #3c6e3a;
+    --moss-soft: #e2ecd6;
+    --ochre: #855a0c;
+    --ochre-soft: #f6e7c8;
+    --clay: #9a4524;
+    --clay-soft: #f7e0d3;
+    --rose: #963a4c;
+    --rose-soft: #f6dfe2;
+    --plum: #6e4467;
+    --plum-soft: #eee0ec;
+    --bark: #5b4331;
+    --bark-soft: #ecdfcf;
+    --danger: #a13626;
+    --danger-soft: #f8dcd5;
+
+    --shade: #2a241f;
+    --grain-opacity: 0.35;
+}
+
+[data-theme='dark'] {
+    color-scheme: dark;
+
+    --canvas: #1c1815;
+    --surface: #25201c;
+    --sunken: #2e2823;
+    --sand: #33291f;
+    --line: #3d352e;
+    --ink: #efe6da;
+    --ink-muted: #b3a594;
+
+    --primary: #8cc2bb;
+    --primary-hover: #a5d1cb;
+    --primary-soft: #1f3431;
+    --on-primary: #1c1815;
+
+    --moss: #a3c791;
+    --moss-soft: #26331f;
+    --ochre: #ddb468;
+    --ochre-soft: #3a2e15;
+    --clay: #e0946f;
+    --clay-soft: #3d271c;
+    --rose: #e39aa8;
+    --rose-soft: #3d2329;
+    --plum: #cfa3c7;
+    --plum-soft: #342532;
+    --bark: #d7bfa4;
+    --bark-soft: #352a21;
+    --danger: #e8917b;
+    --danger-soft: #40221c;
+
+    --shade: #000000;
+    --grain-opacity: 0.5;
+}
+
+/*
+ * The default Tailwind palette is removed on purpose: a view can only use
+ * the tokens below, so both themes stay consistent without dark: variants.
+ */
+@theme inline {
+    --color-*: initial;
+    --color-transparent: transparent;
+    --color-current: currentColor;
+
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-sunken: var(--sunken);
+    --color-sand: var(--sand);
+    --color-line: var(--line);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-primary-soft: var(--primary-soft);
+    --color-on-primary: var(--on-primary);
+    --color-moss: var(--moss);
+    --color-moss-soft: var(--moss-soft);
+    --color-ochre: var(--ochre);
+    --color-ochre-soft: var(--ochre-soft);
+    --color-clay: var(--clay);
+    --color-clay-soft: var(--clay-soft);
+    --color-rose: var(--rose);
+    --color-rose-soft: var(--rose-soft);
+    --color-plum: var(--plum);
+    --color-plum-soft: var(--plum-soft);
+    --color-bark: var(--bark);
+    --color-bark-soft: var(--bark-soft);
+    --color-danger: var(--danger);
+    --color-danger-soft: var(--danger-soft);
+    --color-shade: var(--shade);
+
+    --font-body: 'Literata Variable', 'Iowan Old Style', Georgia, serif;
+    --font-display: 'Fraunces Variable', 'Iowan Old Style', Georgia, serif;
+
+    --radius-soft: 0.875rem;
+
+    --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Clickable elements sink slightly on press. */
+@utility press {
+    transition-property: transform, background-color, color, border-color, box-shadow, opacity;
+    transition-duration: 160ms;
+    transition-timing-function: var(--ease-out-soft);
+
+    &:active:not(:disabled) {
+        transform: scale(0.96);
+    }
+}
+
+@layer base {
+    html {
+        scrollbar-gutter: stable;
+        /* Anchors and focused fields stop below the sticky menu. */
+        scroll-padding-top: 5.5rem;
+    }
+
+    body {
+        @apply bg-canvas font-body text-ink antialiased;
+        font-variant-numeric: tabular-nums;
+    }
+
+    /*
+     * Warm glow and paper grain live on fixed layers of their own. Painting
+     * them on body with background-attachment: fixed would repaint the whole
+     * screen on every scrolled frame.
+     */
+    body::before,
+    body::after {
+        content: '';
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+        transform: translateZ(0);
+    }
+
+    body::before {
+        background-image: radial-gradient(ellipse 80% 50% at 0% 0%, var(--sand), transparent 70%);
+    }
+
+    body::after {
+        opacity: var(--grain-opacity);
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    h1,
+    h2,
+    h3 {
+        @apply font-display text-ink;
+        font-variation-settings: 'SOFT' 100;
+        text-wrap: balance;
+    }
+
+    :focus-visible {
+        @apply outline-2 outline-offset-2 outline-primary;
+    }
+
+    ::selection {
+        @apply bg-primary text-on-primary;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+ * Motion. Page changes cross-fade and the active tab slides between menu
+ * items (browsers without cross-document view transitions simply skip it).
+ * Everything is off for people who ask the system for reduced motion.
+ */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    @view-transition {
+        navigation: auto;
+    }
+
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+        animation-duration: 200ms;
+        animation-timing-function: var(--ease-out-soft);
+    }
+
+    ::view-transition-group(nav-active) {
+        animation-duration: 280ms;
+        animation-timing-function: var(--ease-out-soft);
+    }
+
+    .nav-active {
+        view-transition-name: nav-active;
+    }
+
+    .rise-in {
+        animation: rise-in 360ms var(--ease-out-soft) both;
+    }
+}
+
+/*
+ * Theme switch: theme.js wraps the change in a view transition and grows a
+ * circle over the new snapshot. Only one composited layer animates, so it
+ * stays smooth however long the page is. The default cross-fade is turned off
+ * for that transition only, and the menu pill joins the page snapshot instead
+ * of animating on its own.
+ */
+.theme-transition::view-transition-old(root),
+.theme-transition::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+.theme-transition .nav-active {
+    view-transition-name: none;
+}
+
+/* Every colour token changes at once; letting ~100 hover transitions chase
+   them is what made switching stutter. Only the circle and the toggle's own
+   thumb and icons animate. */
+.theme-transition *:not(.theme-toggle__thumb, .theme-toggle__icon),
+.theme-transition *::before,
+.theme-transition *::after {
+    transition: none !important;
+}
+
+/* Document checklist */
+.document-check {
+    @apply inline-flex size-6 shrink-0 items-center justify-center rounded-full border-2 border-line bg-surface;
+    transition:
+        background-color 200ms ease,
+        border-color 200ms ease;
+}
+
+.document-check svg {
+    @apply size-4;
+    stroke: var(--surface);
+}
+
+.document-check__mark {
+    stroke-dasharray: 24;
+    stroke-dashoffset: 24;
+    transition: stroke-dashoffset 320ms var(--ease-out-soft) 60ms;
+}
+
+.document-check--on {
+    @apply border-moss bg-moss;
+    animation: check-pop 360ms var(--ease-out-soft);
+}
+
+.document-check--on .document-check__mark {
+    stroke-dashoffset: 0;
+}
+
+@keyframes check-pop {
+    40% {
+        transform: scale(1.18);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .document-check--on {
+        animation: none;
+    }
+
+    .document-check__mark {
+        transition: none;
+    }
+}
+
+/* Theme toggle */
+.theme-toggle__thumb {
+    transition: transform 520ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.theme-toggle__icon {
+    transition: transform 700ms cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+[aria-checked='true'] > .theme-toggle__icon--light {
+    transform: rotate(180deg) scale(1.12);
+}
+
+[aria-checked='true'] > .theme-toggle__icon--dark {
+    transform: rotate(-28deg) scale(1.12);
+}
+
+[aria-checked='true'] > .theme-toggle__icon--system {
+    transform: scale(1.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .theme-toggle__thumb,
+    .theme-toggle__icon {
+        transition: none;
+    }
+}
+
+@keyframes rise-in {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+}
+
+/*
+ * FullCalendar reads these variables; mapping them to our tokens makes the
+ * calendar follow the theme like any other component.
+ */
+.fc {
+    --fc-border-color: var(--line);
+    --fc-page-bg-color: var(--surface);
+    --fc-neutral-bg-color: var(--sunken);
+    --fc-neutral-text-color: var(--ink-muted);
+    --fc-list-event-hover-bg-color: var(--sunken);
+    --fc-today-bg-color: color-mix(in oklab, var(--sand) 55%, transparent);
+    --fc-now-indicator-color: var(--clay);
+    --fc-highlight-color: color-mix(in oklab, var(--primary) 15%, transparent);
+    --fc-non-business-color: color-mix(in oklab, var(--sunken) 55%, transparent);
+    --fc-event-bg-color: transparent;
+    --fc-event-border-color: transparent;
+    --fc-event-text-color: var(--ink);
+
+    --fc-button-text-color: var(--ink);
+    --fc-button-bg-color: var(--surface);
+    --fc-button-border-color: var(--line);
+    --fc-button-hover-bg-color: var(--sunken);
+    --fc-button-hover-border-color: var(--line);
+    --fc-button-active-bg-color: var(--primary-soft);
+    --fc-button-active-border-color: var(--line);
+
+    font-size: 0.875rem;
+}
+
+.fc .fc-toolbar.fc-header-toolbar {
+    @apply mb-4 flex-wrap gap-3;
+}
+
+.fc .fc-toolbar-title {
+    @apply font-display text-lg text-ink first-letter:uppercase sm:text-2xl;
+    font-variation-settings: 'SOFT' 100;
+}
+
+.fc .fc-button {
+    @apply press min-h-10 rounded-full px-3.5 capitalize shadow-none sm:px-4;
+}
+
+.fc .fc-button-group > .fc-button {
+    @apply rounded-none first:rounded-s-full last:rounded-e-full;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+    @apply font-semibold text-primary;
+}
+
+/* FullCalendar draws its own focus halo after every click; keyboard focus
+   gets our outline instead, drawn inside so grouped buttons don't overlap. */
+.fc .fc-button:focus {
+    box-shadow: none !important;
+}
+
+.fc .fc-button:focus-visible {
+    @apply outline-2 -outline-offset-4 outline-primary;
+}
+
+.fc .fc-col-header-cell-cushion,
+.fc .fc-daygrid-day-number,
+.fc .fc-list-day-text,
+.fc .fc-list-day-side-text {
+    @apply text-ink first-letter:uppercase;
+}
+
+.fc .fc-timegrid-slot-label-cushion,
+.fc .fc-list-event-time {
+    @apply whitespace-nowrap text-ink-muted;
+}
+
+.fc .fc-list-event-title {
+    @apply break-words whitespace-normal;
+}
+
+/* Phones: the title takes its own row, navigation buttons sit below it. */
+@media (max-width: 639px) {
+    .fc .fc-header-toolbar > .fc-toolbar-chunk:first-child {
+        flex-basis: 100%;
+    }
+}
+
+.fc .fc-scrollgrid {
+    @apply overflow-hidden rounded-soft;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .fc .fc-view {
+        animation: fade-in 220ms var(--ease-out-soft);
+    }
+
+    .fc .fc-event {
+        animation: fade-in 260ms var(--ease-out-soft);
+    }
+}
+
+/*
+ * Side-by-side appointments get a gutter so neither one covers the other;
+ * slotEventOverlap is off in agenda.js for the same reason.
+ */
+.fc .fc-timegrid-col-events {
+    margin: 0 3px 0 2px;
+}
+
+.fc .fc-timegrid-event-harness > .fc-timegrid-event {
+    margin-inline-end: 3px;
+}
+
+/* Same tones as x-status-badge. */
+.agenda-event {
+    --tone: var(--primary);
+    --tone-soft: var(--primary-soft);
+
+    border-inline-start: 3px solid var(--tone) !important;
+    background: var(--tone-soft) !important;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition:
+        transform 160ms var(--ease-out-soft),
+        box-shadow 160ms var(--ease-out-soft);
+}
+
+.agenda-event:hover {
+    box-shadow: 0 4px 14px -6px color-mix(in oklab, var(--shade) 35%, transparent);
+    z-index: 5 !important;
+}
+
+.agenda-event:active {
+    transform: scale(0.98);
+}
+
+.agenda-event--confirmed {
+    --tone: var(--moss);
+    --tone-soft: var(--moss-soft);
+}
+
+.agenda-event--in_progress {
+    --tone: var(--ochre);
+    --tone-soft: var(--ochre-soft);
+}
+
+.agenda-event--completed {
+    --tone: var(--bark);
+    --tone-soft: var(--bark-soft);
+}
+
+.agenda-event--cancelled {
+    --tone: var(--danger);
+    --tone-soft: var(--danger-soft);
+
+    text-decoration: line-through;
+    opacity: 0.8;
+}
+
+.agenda-event--no_show {
+    --tone: var(--clay);
+    --tone-soft: var(--clay-soft);
+
+    opacity: 0.8;
+}
+
+.agenda-event .fc-event-main {
+    @apply overflow-hidden px-1.5 py-1 text-ink;
+}
+
+.agenda-event__time {
+    @apply truncate text-xs text-ink-muted;
+}
+
+.agenda-event__title {
+    @apply truncate font-semibold;
+}
+
+.agenda-event__meta {
+    @apply truncate text-xs text-ink-muted;
+}
+
+/* Short slots only have room for one line: time and name side by side. */
+.fc-timegrid-event-short .agenda-event__meta {
+    @apply hidden;
+}
+
+/* Month view */
+.fc-daygrid-event.agenda-event {
+    @apply mx-1 mb-0.5 px-1.5 py-0.5;
+}
+
+.agenda-event__line {
+    @apply flex min-w-0 items-baseline gap-1.5 text-xs;
+}
+
+.agenda-event__line .agenda-event__time {
+    @apply shrink-0 font-semibold;
+    color: var(--tone);
+}
+
+.fc .fc-daygrid-more-link {
+    @apply press mx-1 rounded-full px-1.5 text-xs font-semibold text-primary hover:bg-primary-soft;
+}
+
+.fc .fc-daygrid-day-number {
+    @apply px-2 py-1 text-sm;
+}
+
+.fc .fc-popover {
+    @apply overflow-hidden rounded-soft border-line bg-surface shadow-xl shadow-shade/10;
+}
+
+.fc .fc-popover-header {
+    @apply bg-sunken px-3 py-2 font-semibold;
+}
+
+/* List view */
+.fc .fc-list {
+    @apply border-0;
+}
+
+.fc .fc-list-day-cushion {
+    @apply bg-sand px-4 py-2.5 font-display text-base;
+    font-variation-settings: 'SOFT' 100;
+}
+
+.fc .fc-list-event td {
+    @apply border-line px-4 py-3 align-top;
+}
+
+.fc .fc-list-event-time {
+    @apply w-28 pt-3.5 text-sm font-semibold text-ink;
+}
+
+.fc .fc-list-event-graphic {
+    @apply hidden;
+}
+
+.fc .fc-list-event:hover td {
+    @apply bg-sunken;
+}
+
+.fc-list .agenda-event {
+    border-inline-start: 0 !important;
+    background: transparent !important;
+    cursor: pointer;
+}
+
+.fc-list .agenda-event .fc-list-event-time {
+    box-shadow: inset 3px 0 0 var(--tone);
+}
+
+.agenda-event__row {
+    @apply flex items-start justify-between gap-3;
+}
+
+.fc-list .agenda-event__title {
+    @apply whitespace-normal text-base;
+}
+
+.fc-list .agenda-event__meta {
+    @apply mt-0.5 whitespace-normal text-sm;
+}
+
+.agenda-event__status {
+    @apply shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold;
+    background: var(--tone-soft);
+    color: var(--tone);
+}
+
+.fc .fc-list-empty {
+    @apply bg-surface py-16 text-ink-muted;
+}
+
+@media (max-width: 639px) {
+    .fc .fc-list-event-time {
+        @apply w-20 px-3 text-xs;
+    }
+
+    .agenda-event__row {
+        @apply flex-col gap-1.5;
+    }
 }

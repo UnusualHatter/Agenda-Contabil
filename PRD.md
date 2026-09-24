@@ -1,7 +1,7 @@
 # PRD — Sustentabilidade Econômica e Financeira
 ## Agenda e Gestão de Atendimentos
 
-**Status:** Draft v1
+**Status:** Draft v2 — escopo ampliado com checklist de documentos, lembretes e painel de impacto
 **Stack principal:** PHP + Laravel + PostgreSQL
 **Idioma da interface:** Português (pt-BR)
 **Objetivo:** iniciar um repositório organizado, testável e preparado para crescer para web, API e integrações de agenda.
@@ -9,6 +9,8 @@
 ---
 
 ## 1. Visão do produto
+
+**Contexto.** Projeto social do curso de Ciências Contábeis da Universidade Feevale. Objetivo do projeto: orientar organizações com e sem fins lucrativos que apresentam carências nas áreas financeira, fiscal e contábil, visando a sustentabilidade e a perpetuidade delas. Público-alvo: pequenas empresas, entidades do terceiro setor, MEIs e pessoas físicas do Vale do Rio dos Sinos e das cidades de atuação da universidade. Os atendimentos acontecem na universidade, em locais parceiros (ex.: Sala do Empreendedor de uma prefeitura) e on-line, o que justifica o campo tipo/local do atendimento.
 
 O produto é uma plataforma de agenda e gestão de atendimentos para o projeto de Sustentabilidade Econômica e Financeira.
 
@@ -22,7 +24,9 @@ O sistema deve permitir que a equipe:
 - atribua responsáveis;
 - acompanhe status e histórico;
 - consulte atendimentos anteriores;
-- gere indicadores e relatórios;
+- informe ao atendido, antes do atendimento, quais documentos ele precisa trazer;
+- envie lembretes e permita que o atendido confirme ou cancele sem precisar de login;
+- meça o impacto social do projeto com indicadores prontos para relatórios;
 - opere de forma responsiva no desktop e celular;
 - futuramente sincronize eventos com calendários externos, incluindo Google Calendar, Outlook, ICS/CalDAV e, se tecnicamente possível, Mundy.
 
@@ -41,7 +45,9 @@ Entregar uma aplicação web funcional que permita realizar o fluxo:
 7. visualizar o atendimento na agenda;
 8. alterar status, reagendar ou cancelar;
 9. consultar histórico do atendido;
-10. consultar indicadores básicos e relatórios.
+10. marcar os documentos entregues pelo atendido;
+11. enviar lembrete com a lista de documentos;
+12. consultar o painel de impacto.
 
 ## 3. Usuários do sistema
 
@@ -72,7 +78,7 @@ O sistema deve usar autorização por Policies/Gates e não apenas esconder bot�
 
 O termo de domínio preferencial é **Atendido**. Internamente, o model pode ser `Client`, desde que a interface utilize "Atendido".
 
-- **RF-010 — Cadastro de atendidos.** Campos mínimos: nome / razão social; tipo (Pessoa Física ou Pessoa Jurídica); telefone; e-mail; documento opcional; nome fantasia opcional; observações opcionais; ativo/inativo.
+- **RF-010 — Cadastro de atendidos.** Campos mínimos: nome / razão social; tipo (Pessoa Física ou Pessoa Jurídica); telefone; e-mail; documento opcional; nome fantasia opcional; observações opcionais; ativo/inativo; consentimento para receber lembretes (LGPD, desmarcado por padrão).
 - **RF-011 — Pesquisa.** Permitir pesquisar por nome, razão social, telefone, e-mail e documento (quando informado).
 - **RF-012 — Histórico.** A tela do atendido deve listar seus atendimentos anteriores e futuros.
 - **RF-013 — Reutilização.** Ao criar um novo atendimento, deve ser possível selecionar um atendido já existente sem duplicar seus dados.
@@ -111,9 +117,21 @@ As demandas devem ser administráveis pelo sistema. Não codificar permanentemen
 
 - **RF-030** — Administrador deve poder criar, editar e desativar categorias e serviços. Registros históricos devem continuar exibindo serviços desativados.
 
-## 8. Dashboard
+### 7.1 Checklist de documentos
+
+A maior causa de retrabalho em atendimentos fiscais é o atendido chegar sem os documentos. Cada serviço mantém a lista do que precisa ser trazido.
+
+- **RF-031** — Cada serviço possui uma lista ordenada de documentos, editável pelo administrador.
+- **RF-032** — Ao agendar, a lista do serviço é **copiada** para o atendimento. Alterar a lista do serviço depois não reescreve atendimentos existentes.
+- **RF-033** — A equipe marca cada documento como entregue; o sistema registra quando.
+- **RF-034** — O sistema registra apenas **que** o documento foi entregue. Nenhum arquivo é enviado ou armazenado (RNF-007).
+
+## 8. Dashboard e painel de impacto
 
 - **RF-040** — Após login, mostrar: atendimentos de hoje; próximos atendimentos; total de atendimentos no período; quantidade por status; quantidade PF × PJ; principais demandas.
+- **RF-041 — Painel de impacto.** Indicadores do projeto para relatórios institucionais: pessoas atendidas por mês; atendidos únicos; PF × PJ; atendimentos de MEI e de ONGs; demandas mais frequentes; taxa de comparecimento; atendimentos por responsável.
+- **RF-042** — Todos os indicadores aceitam filtro de período e podem ser exportados em CSV.
+- **RF-043** — Cada indicador deve ser calculado por uma consulta isolada e testada, nunca dentro da view.
 
 Não criar dashboard excessivamente complexo no primeiro milestone.
 
@@ -122,6 +140,15 @@ Não criar dashboard excessivamente complexo no primeiro milestone.
 - **RF-050 — Filtros mínimos:** período; responsável; tipo de atendido; categoria; serviço; status.
 - **RF-051 — Indicadores mínimos:** total de atendimentos; concluídos; cancelados; não comparecimentos; quantidade de PF; quantidade de PJ; quantidade de MEIs (quando identificável pela classificação); quantidade de ONGs/terceiro setor; demandas mais frequentes; atendimentos por responsável.
 - **RF-052** — Preparar arquitetura para exportação futura em CSV, XLSX e PDF. A exportação não precisa estar pronta no primeiro commit.
+
+### 9.1 Lembretes e confirmação
+
+- **RF-070** — O sistema envia lembrete por e-mail antes do atendimento (padrão: 24 horas) somente para atendidos com consentimento (RF-010).
+- **RF-071** — O lembrete contém data, horário, local e a lista de documentos do atendimento.
+- **RF-072** — O lembrete traz links assinados e com validade para **confirmar** ou **cancelar**, sem exigir login.
+- **RF-073** — Cada atendimento recebe no máximo um lembrete automático; o envio fica registrado.
+- **RF-074** — WhatsApp, fase 1: botão "Enviar pelo WhatsApp" que abre a conversa com a mensagem pronta (`wa.me`), sem API paga.
+- **RF-075** — WhatsApp, fase 2 (somente com conta Business fornecida pelo cliente): envio automático como mais um canal de notificação, sem mudar o restante do fluxo.
 
 ## 10. Auditoria
 
@@ -174,6 +201,8 @@ Tokens nunca devem ser armazenados em texto puro.
 - **RNF-006 — Segurança.** CSRF habilitado; validação server-side; prepared queries via ORM; rate limiting onde aplicável; passwords com hashing padrão Laravel; dados sensíveis nunca em logs; secrets apenas em `.env`; `.env` nunca versionado.
 - **RNF-007 — LGPD.** Minimização de dados. Não armazenar dados fiscais, documentos ou informações financeiras desnecessários ao objetivo operacional. Preparar: controle de acesso; auditoria; política de retenção; anonimização/remoção quando aplicável.
 - **RNF-008 — Acessibilidade.** HTML semântico; labels em formulários; navegação por teclado; contraste legível; mensagens de validação compreensíveis.
+- **RNF-009 — Manutenibilidade.** Detalhada na seção 27.
+- **RNF-010 — Usabilidade.** Detalhada na seção 21.
 
 ## 13. Stack técnica
 
@@ -196,29 +225,25 @@ Laravel convencional com separação de domínio suficiente para evitar controll
 ```
 app/
 ├── Domain/
-│   ├── Appointments/
-│   │   ├── Actions/  Data/  Enums/  Events/
-│   │   ├── Exceptions/  Models/  Policies/
-│   │   ├── Queries/  Services/
-│   ├── Clients/
-│   │   ├── Actions/  Data/  Models/  Policies/  Queries/
-│   ├── Services/
-│   │   ├── Models/  Queries/
-│   ├── Reporting/
-│   │   ├── Queries/  Data/
-│   └── Calendar/
-│       ├── Contracts/  Data/  Models/  Providers/
+│   ├── Appointments/{Actions, Enums, Queries}
+│   ├── Clients/{Enums, Queries}
+│   ├── Reporting/Queries
+│   └── Calendar/{Contracts, Data, Providers}
 ├── Http/
 │   ├── Controllers/{Api/V1, Web}
 │   ├── Requests/
 │   └── Resources/
 ├── Livewire/{Agenda, Appointments, Clients, Dashboard}
-├── Models/User.php
+├── Models/            # todos os models Eloquent
+├── Notifications/
+├── Policies/
 ├── Providers/
 └── Support/
 ```
 
 **Observação:** não criar diretórios vazios apenas para corresponder ao desenho. Criar cada diretório quando existir uma classe real que justifique sua existência.
+
+**Models Eloquent ficam em `app/Models`** (convenção do Laravel: factories, policies e route model binding funcionam sem configuração). `app/Domain` guarda o que é regra: Actions, Enums, Queries.
 
 ## 15. Estrutura do repositório
 
@@ -235,7 +260,7 @@ app/
 │   ├── Feature/{Appointments, Auth, Clients, Reports}
 │   └── Unit/
 ├── .editorconfig  .env.example  .gitignore
-├── CLAUDE.md  CONTRIBUTING.md  PRD.md  README.md
+├── CONTRIBUTING.md  PRD.md  README.md
 ├── composer.json  package.json  phpunit.xml
 ```
 
@@ -250,13 +275,13 @@ Model padrão do Laravel acrescido de `role` e `active`. Preferencialmente imple
 ```
 id                  bigint
 type                enum/string: individual | organization
-name                varchar
-legal_name          nullable
+name                varchar            -- nome (PF) ou razão social (PJ)
 trade_name          nullable
 document            nullable
 phone               nullable
 email               nullable
 notes               nullable text
+accepts_reminders   boolean default false
 active              boolean default true
 created_at / updated_at / deleted_at nullable
 ```
@@ -276,12 +301,19 @@ id, service_category_id, name, slug, description nullable,
 active boolean, sort_order integer, timestamps
 ```
 
+### `service_documents`
+
+```
+id, service_id, name, description nullable, sort_order, timestamps
+```
+
 ### `appointments`
 
 ```
 id
 client_id
 service_id
+service_details nullable   -- descrição livre para o serviço "Outros"
 responsible_user_id
 starts_at timestamp
 ends_at   timestamp
@@ -294,7 +326,17 @@ updated_by nullable
 created_at / updated_at / deleted_at nullable
 ```
 
-**Constraints:** `ends_at > starts_at`; FKs obrigatórias; índices em `starts_at`, `responsible_user_id`, `status`; índice composto útil para consultas da agenda.
+**Constraints:** `ends_at > starts_at`; FKs obrigatórias; índices em `starts_at`, `responsible_user_id`, `status`; índice composto útil para consultas da agenda. O conflito de horário (RD-002) também é garantido pelo banco com uma *exclusion constraint* (`btree_gist`), para que duas requisições simultâneas não gravem horários sobrepostos.
+
+### `appointment_documents`
+
+```
+id, appointment_id, name, sort_order, received_at nullable, timestamps
+```
+
+Cópia do checklist do serviço no momento do agendamento (RF-032).
+
+`reminder_sent_at` entra em `appointments` somente no milestone de lembretes.
 
 ### `appointment_activities`
 
@@ -317,27 +359,31 @@ Criar seeders **idempotentes**.
 
 Não duplicar "Orçamento familiar e pessoal" ou "Orçamento empresarial" caso apareçam repetidos na fonte original.
 
-## 18. Rotas web planejadas
+**Checklists iniciais:** IRPF e declaração de imposto de renda; atendimento MEI; emissão de guias; prestação de contas do terceiro setor; orçamento familiar; fluxo de caixa; formação de preço; cálculo de custos. Os demais serviços começam sem lista e o administrador completa depois.
+
+## 18. Rotas web
+
+Caminhos em português, porque aparecem para o usuário na barra de endereço.
 
 ```
-GET /dashboard
-GET /agenda
+GET   /dashboard
+GET   /agenda
+GET   /agenda/eventos                     # JSON para o FullCalendar
+PATCH /atendimentos/{appointment}/horario # arrastar na agenda
 
 GET /atendidos
-GET /atendidos/create
+GET /atendidos/novo
 GET /atendidos/{client}
-GET /atendidos/{client}/edit
+GET /atendidos/{client}/editar
 
-GET /atendimentos
-GET /atendimentos/create
+GET /atendimentos/novo?inicio=&fim=&atendido=
 GET /atendimentos/{appointment}
-GET /atendimentos/{appointment}/edit
 
-GET /relatorios
-GET /configuracoes
+GET /relatorios        # Milestone 5
+GET /configuracoes     # administração do catálogo
 ```
 
-As ações podem ser Livewire e não precisam mapear 1:1 para controllers.
+As ações de formulário são Livewire e não mapeiam 1:1 para controllers.
 
 ## 19. API planejada
 
@@ -370,7 +416,25 @@ Aplicar: API Resources; Form Requests; Policies; paginação; filtros previsíve
 - **RD-006** — Mudanças críticas geram `appointment_activity`.
 - **RD-007** — O cliente não deve ser excluído fisicamente se possuir histórico de atendimento.
 
-## 21. UX mínima
+## 21. Usabilidade
+
+O sistema será usado por estudantes em rodízio, muitas vezes sem treinamento. Qualquer pessoa da equipe deve conseguir agendar um atendimento na primeira vez que abrir o sistema.
+
+**Princípios:**
+
+- **Fluxo principal em até 3 passos:** buscar ou cadastrar atendido → escolher serviço e horário → salvar. Sem trocar de tela.
+- **O sistema pensa pela pessoa:** duração sugerida pelo serviço; responsável padrão é quem está logado; dia da semana e checklist aparecem sozinhos; horários ocupados já vêm indicados antes de salvar.
+- **Erro explicado e com saída:** mensagens dizem o que houve e o que fazer ("Maria já tem atendimento das 14:00 às 15:00. Escolha outro horário ou outro responsável."). Nunca códigos ou termos técnicos.
+- **Ações destrutivas pedem confirmação e têm desfazer quando possível.** Cancelar nunca apaga.
+- **Vocabulário do usuário:** "Atendido", "Atendimento", "Demanda". Nada de "registro", "entidade", "ID".
+- **Estado sempre visível:** status com cor **e** texto (nunca só cor); documentos pendentes com contador.
+- **Mobile de verdade:** botões com área de toque ≥ 44px, formulários de uma coluna no celular, agenda em visão de lista no celular.
+- **Rápido:** busca de atendido com resposta enquanto digita; páginas principais abaixo de 1 segundo com dados reais.
+- **Acessível:** navegação completa por teclado, foco visível, labels em todos os campos (RNF-008).
+
+**Critério de validação:** antes de cada entrega, uma pessoa que nunca usou o sistema tenta agendar um atendimento sem ajuda. Se travar, é bug de usabilidade.
+
+### 21.1 Telas
 
 **Agenda.** Cada evento deve mostrar horário; nome do atendido; serviço ou categoria; status de forma visual. Ao clicar, abrir detalhes do atendimento.
 
@@ -386,11 +450,19 @@ Não exibir dados sensíveis desnecessariamente em listas.
 
 ## 23. Design
 
-Visual limpo, institucional, moderno, acessível, sem excesso de animações. Não tentar reproduzir literalmente o material impresso. Usar a identidade visual posteriormente, quando os assets oficiais estiverem disponíveis.
+**Direção:** quente, orgânico e institucional — parece papel impresso, não painel de software. Ver ADR 0005.
+
+- **Tipografia serifada.** Fraunces (títulos, eixo `SOFT` para terminais arredondados) e Literata (texto, desenhada para leitura em tela, com tamanho óptico). Fontes empacotadas pelo Vite, sem requisição a serviços externos (RNF-007).
+- **Paleta.** Neutros de papel (claro) e madeira escura (escuro); verde-azulado vindo do material impresso do projeto como cor principal; terracota, musgo e ocre para destaques e estados.
+- **Tema claro, escuro e automático.** O usuário escolhe; "automático" segue o sistema operacional. A escolha é aplicada antes da primeira pintura, sem piscar.
+- **Tokens, não cores soltas.** A paleta padrão do Tailwind é removida; views só usam tokens semânticos (`bg-surface`, `text-ink-muted`, `bg-primary`…), que mudam sozinhos entre os temas.
+- **Contraste.** Todo par texto/fundo tem no mínimo 4,5:1 nos dois temas (RNF-008).
+- **Forma.** Cantos generosos, botões em pílula, bordas finas em vez de sombras pesadas, textura sutil de papel no fundo. Sem animações além de transições de cor.
+- **Identidade.** Marca própria redesenhada a partir do símbolo do material impresso (cifrão entre setas circulares). Logos oficiais da universidade só com os arquivos e a autorização da instituição.
 
 ## 24. Out of scope do MVP
 
-Não implementar no primeiro milestone: aplicativo Android; sincronização Mundy; Google Calendar; Outlook; CalDAV; pagamento; chat; videoconferência; CRM completo; armazenamento de documentos fiscais; automações complexas; IA; BI avançado; multi-tenant.
+Não implementar no primeiro milestone: aplicativo Android; sincronização Mundy; Google Calendar; Outlook; CalDAV; pagamento; chat; videoconferência; CRM completo; armazenamento de documentos fiscais (o checklist registra apenas a entrega); envio automático por WhatsApp sem conta Business do cliente; automações complexas; IA; BI avançado; multi-tenant; divulgação e inscrição em oficinas e mutirões (candidata a milestone futuro).
 
 A arquitetura não deve impedir essas evoluções.
 
@@ -414,33 +486,39 @@ php artisan test
 
 ### Milestone 1 — Domínio principal
 
-**Entregáveis:** `Client`; `ServiceCategory`; `Service`; `Appointment`; enums; migrations; factories; seeders; policies; conflito de horários; testes.
+**Entregáveis:** `Client`; `ServiceCategory`; `Service`; `ServiceDocument`; `Appointment`; `AppointmentDocument`; `AppointmentActivity`; enums com transições de status; actions de agendar, reagendar, trocar responsável e mudar status; conflito de horários na aplicação e no banco; policies; seed do catálogo e dos checklists; testes.
 
-**Aceite:** é possível cadastrar atendido e atendimento pelo backend/testes.
+**Aceite:** é possível cadastrar atendido e atendimento pelo backend/testes; o checklist é copiado ao agendar; conflitos são bloqueados.
 
 ### Milestone 2 — Interface operacional
 
-**Entregáveis:** dashboard básico; CRUD de atendidos; CRUD de atendimentos; busca; filtros; validação; histórico do atendido.
+**Entregáveis:** dashboard básico; CRUD de atendidos; CRUD de atendimentos; busca; filtros; validação; histórico do atendido; marcação de documentos entregues; administração de serviços e checklists.
 
-**Aceite:** usuário consegue realizar o fluxo operacional sem usar banco/CLI.
+**Aceite:** usuário consegue realizar o fluxo operacional sem usar banco/CLI, seguindo os princípios da seção 21.
 
 ### Milestone 3 — Agenda
 
-**Entregáveis:** FullCalendar; month/week/day; criação a partir de slot; edição; reagendamento; filtros por responsável/status; detalhes.
+**Entregáveis:** FullCalendar; month/week/day (lista no celular); criação a partir de slot; edição; reagendamento por arrastar; filtros por responsável/status; detalhes.
 
 **Aceite:** agenda reflete corretamente registros do banco e respeita autorização.
 
-### Milestone 4 — Relatórios e auditoria
+### Milestone 4 — Lembretes
 
-**Entregáveis:** indicadores; filtros; activity log; relatório por período; por categoria; por responsável.
+**Entregáveis:** comando agendado de lembretes; notificação por e-mail com checklist; links assinados de confirmação/cancelamento; botão WhatsApp (`wa.me`); `reminder_sent_at`.
 
-### Milestone 5 — API
+**Aceite:** atendido com consentimento recebe um único lembrete e consegue confirmar ou cancelar pelo link.
+
+### Milestone 5 — Painel de impacto, relatórios e auditoria
+
+**Entregáveis:** indicadores de RF-040 a RF-043 e RF-051; filtros; exportação CSV; activity log visível no atendimento.
+
+### Milestone 6 — API
 
 **Entregáveis:** Sanctum; `/api/v1`; endpoints essenciais; OpenAPI ou documentação equivalente; feature tests. Preparar para futuro Android app.
 
-### Milestone 6 — Integrações
+### Milestone 7 — Integrações
 
-Somente iniciar após confirmação de provider. Primeiro provider recomendado: Google Calendar. Mundy só deve ser implementado após confirmar oficialmente um mecanismo suportado.
+Somente iniciar após confirmação de provider. Primeiro provider recomendado: Google Calendar. Mundy só deve ser implementado após confirmar oficialmente um mecanismo suportado. WhatsApp fase 2 (RF-075) entra aqui.
 
 ## 26. Estratégia de testes
 
@@ -452,8 +530,34 @@ Utilizar PHPUnit **ou** Pest de forma consistente. Não misturar estilos sem nec
 - `AppointmentAuthorizationTest` — usuário autorizado visualiza; usuário sem permissão não edita; visualizador não cancela.
 - `AppointmentLifecycleTest` — criação; confirmação; conclusão; cancelamento; reagendamento.
 - `ClientHistoryTest` — histórico lista somente atendimentos corretos; ordenação correta; serviços desativados continuam visíveis.
+- `AppointmentChecklistTest` — checklist copiado ao agendar; mudança no serviço não altera atendimentos existentes; marcação de entrega.
+- `ServiceCatalogSeederTest` — seeder idempotente.
+- `AppointmentReminderTest` (M4) — só envia com consentimento; nunca envia duas vezes; links assinados expiram.
+- Testes de cada indicador do painel de impacto (M5) com dados conhecidos.
 
-## 27. Convenções de código
+## 27. Manutenibilidade e convenções de código
+
+O projeto será mantido por turmas diferentes ao longo dos semestres. O código precisa ser entendido por quem chega sem contexto.
+
+**Regras de estrutura:**
+
+- **Uma classe, uma responsabilidade, nome de ação:** `ScheduleAppointment`, `RescheduleAppointment`. O nome diz o que faz; não existem `AppointmentService`, `Helper`, `Manager` ou `Utils`.
+- **Regras de domínio moram em um lugar só.** Transições de status ficam no enum `AppointmentStatus`; conflito de horário em uma única classe; indicadores em classes de `Queries`. Controllers e componentes Livewire apenas recebem entrada e chamam essas classes.
+- **Regras críticas também no banco:** `CHECK`, chaves estrangeiras e *exclusion constraint* garantem integridade mesmo que alguém esqueça a regra no código.
+- **Textos de interface em `lang/pt_BR`**, nunca em Blade ou PHP.
+- **Toda decisão estrutural vira ADR** em `docs/decisions/`.
+
+**Regras de estilo:**
+
+- **Sem cadeias de `else`/`elseif`.** Usar retorno antecipado (*guard clauses*), `match` para mapear valores e tabelas de dados (ex.: transições permitidas) em vez de condicionais aninhadas.
+- **Comentários explicam o porquê**, nunca repetem o que o código diz. Docblocks só quando acrescentam informação que o tipo não expressa (ex.: `@return Collection<int, Appointment>`).
+- **Erros explícitos:** regra violada lança `ValidationException` com mensagem para o usuário. Sem `try/catch` que só registra e relança.
+- **Sem código defensivo inútil:** não checar `null` em valores tipados como não nulos.
+- **Tipos em tudo:** parâmetros, retornos, propriedades e enums nativos do PHP.
+
+**Garantias automáticas:** Pint na CI; testes contra PostgreSQL real (não SQLite), porque parte das regras vive no banco; todo comportamento novo acompanha teste.
+
+**Convenções gerais:**
 
 - PSR-12;
 - `declare(strict_types=1);` em código de domínio quando apropriado;
@@ -500,11 +604,7 @@ Não adicionar deploy automático no início.
 
 Deve conter: visão geral; requisitos; setup local; PostgreSQL; `.env`; migrations; seed; execução; testes; build frontend; arquitetura resumida; link para `PRD.md`.
 
-## 31. CLAUDE.md esperado
-
-Curto, referenciando este PRD. Ver o arquivo `CLAUDE.md` na raiz.
-
-## 32. Definition of Done
+## 31. Definition of Done
 
 Uma feature só está concluída se:
 
@@ -518,21 +618,11 @@ Uma feature só está concluída se:
 - documentação foi atualizada quando necessário;
 - não há TODO crítico ocultando funcionalidade quebrada.
 
-## 33. Critérios de aceite do MVP
+## 32. Critérios de aceite do MVP
 
-O MVP estará funcional quando: usuário consegue autenticar; cadastrar PF; cadastrar PJ; buscar atendido existente; criar atendimento; data e horário armazenados corretamente; dia da semana derivado automaticamente; selecionar demanda/serviço; atribuir responsável; conflitos de horário bloqueados; visualizar agenda dia/semana/mês; reagendar; cancelar; histórico do atendido funciona; filtros principais funcionam; dashboard apresenta indicadores básicos; permissões impedem operações indevidas; auditoria registra mudanças críticas; testes críticos passam; aplicação funciona em desktop e mobile browser; projeto sobe seguindo apenas o README.
+O MVP estará funcional quando: usuário consegue autenticar; checklist de documentos é copiado e marcado; lembrete é enviado uma única vez com links de confirmação; painel de impacto exibe indicadores filtráveis por período; cadastrar PF; cadastrar PJ; buscar atendido existente; criar atendimento; data e horário armazenados corretamente; dia da semana derivado automaticamente; selecionar demanda/serviço; atribuir responsável; conflitos de horário bloqueados; visualizar agenda dia/semana/mês; reagendar; cancelar; histórico do atendido funciona; filtros principais funcionam; dashboard apresenta indicadores básicos; permissões impedem operações indevidas; auditoria registra mudanças críticas; testes críticos passam; aplicação funciona em desktop e mobile browser; projeto sobe seguindo apenas o README.
 
-## 34. Instrução inicial para Claude Code
-
-Execute **somente o Milestone 0 primeiro**. Não tente implementar todo o PRD de uma vez.
-
-Antes de modificar arquivos: examine o repositório; informe a stack/estado atual encontrados; compare com este PRD; crie um plano curto para o Milestone 0; implemente o bootstrap; execute testes e formatter; apresente resumo das alterações; **pare antes do Milestone 1**.
-
-Caso o repositório esteja vazio: inicialize Laravel; configure PostgreSQL; configure autenticação; configure Livewire; configure ferramentas de qualidade; crie documentação; configure CI; confirme que a aplicação sobe e os testes passam.
-
-Não adicionar integração Mundy, Google Calendar ou Android neste momento.
-
-## 35. Princípio arquitetural principal
+## 33. Princípio arquitetural principal
 
 > **A agenda é a interface principal; Atendimento é o domínio principal; Laravel/PostgreSQL é a fonte de verdade.**
 

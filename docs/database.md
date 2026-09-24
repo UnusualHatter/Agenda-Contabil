@@ -8,7 +8,7 @@
 - **Bancos:** `agenda_contabil` (desenvolvimento) e `agenda_contabil_test`
   (suíte de testes, configurado em `phpunit.xml`).
 
-## Estado atual (Milestone 0)
+## Estado atual (Milestone 1)
 
 | Tabela | Origem | Observação |
 | --- | --- | --- |
@@ -17,6 +17,12 @@
 | `sessions` | Laravel | `SESSION_DRIVER=database`. |
 | `cache`, `cache_locks` | Laravel | `CACHE_STORE=database`. |
 | `jobs`, `job_batches`, `failed_jobs` | Laravel | `QUEUE_CONNECTION=database`. |
+| `clients` | Projeto | Atendidos PF (`individual`) ou PJ (`organization`). Soft delete. |
+| `service_categories`, `services` | Projeto | Catálogo administrável; desativar em vez de apagar (RD-004). |
+| `service_documents` | Projeto | Checklist de documentos de cada serviço (RF-031). |
+| `appointments` | Projeto | Atendimentos. Soft delete. |
+| `appointment_documents` | Projeto | Cópia do checklist no agendamento (RF-032). |
+| `appointment_activities` | Projeto | Auditoria append-only, `jsonb` (RF-061). |
 
 ### `users`
 
@@ -32,33 +38,42 @@
 | `remember_token` | varchar null | |
 | `created_at` / `updated_at` | timestamp | UTC. |
 
-Índice adicional: `(active, name)`, para as futuras listas de responsáveis.
+Índice adicional: `(active, name)`, para as listas de responsáveis.
+
+### `clients`
+
+`name` guarda o nome (PF) ou a razão social (PJ); `trade_name` o nome fantasia.
+A coluna `legal_name` do rascunho do PRD foi descartada por duplicar `name`.
+`accepts_reminders` nasce `false`: lembrete só com consentimento (RNF-007).
+Índices em `name`, `document`, `email` e `phone` para a busca (RF-011).
+
+### `services`
+
+`requires_details` marca serviços como "Outros", que exigem descrição livre em
+`appointments.service_details`. `default_duration_minutes` alimenta a duração
+sugerida no formulário (PRD, seção 21).
+
+### `appointments`
+
+`status` é o enum `AppointmentStatus`; `location_type` o enum `LocationType`.
+Não existe coluna de dia da semana: ele é derivado de `starts_at` no fuso de
+exibição (RF-021). Índices: `starts_at`, `status`,
+`(responsible_user_id, starts_at)` e `(client_id, starts_at)`.
 
 ## Planejado (não implementado)
 
-As tabelas abaixo estão especificadas na seção 16 do PRD e entram no Milestone
-1 em diante. Não criar antes da feature que as usa.
-
-- `clients` — atendidos, PF (`individual`) ou PJ (`organization`), com
-  `deleted_at` (soft delete) e índices de busca por nome, telefone e e-mail.
-- `service_categories` e `services` — demandas administráveis; registros
-  desativados continuam visíveis no histórico (RD-004).
-- `appointments` — `client_id`, `service_id`, `responsible_user_id`,
-  `starts_at`, `ends_at`, `status`, `created_by`, `updated_by`, `deleted_at`.
-  Constraint `ends_at > starts_at` (RD-001) e índices em `starts_at`,
-  `responsible_user_id` e `status`.
-- `appointment_activities` — auditoria com `old_values`/`new_values` em
-  `jsonb` (RF-061).
+- `appointments.reminder_sent_at` — Milestone 4 (lembretes).
 - `calendar_connections` e `external_event_links` — **somente** quando a
-  primeira integração real for implementada (Milestone 6).
+  primeira integração real for implementada (Milestone 7).
 
-## Regras que o banco precisa garantir
+## Regras garantidas pelo banco
 
-- `ends_at > starts_at` — constraint de verificação, não apenas validação.
-- Sobreposição de horário para o mesmo responsável (RD-002) é verificada na
-  camada de domínio e coberta por testes; a decisão sobre uma
-  `EXCLUDE USING gist` fica para o Milestone 1, quando a tabela existir.
-- Atendido com histórico não pode ser removido fisicamente (RD-007).
+- `appointments_period_check`: `ends_at > starts_at` (RD-001).
+- `appointments_no_overlap`: *exclusion constraint* com `btree_gist` que impede
+  dois atendimentos ativos sobrepostos para o mesmo responsável (RD-002). Ver
+  [ADR 0004](decisions/0004-appointment-overlap-enforcement.md).
+- Chaves estrangeiras com `restrictOnDelete` para atendido, serviço e
+  responsável: ninguém some do histórico por acidente (RD-005, RD-007).
 
 ## Comandos úteis
 

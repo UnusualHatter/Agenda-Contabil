@@ -10,7 +10,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * Timestamps are persisted in UTC and presented in the project's local
- * timezone. See docs/decisions/0001-timezone-strategy.md.
+ * timezone; conversion happens only here.
  */
 final class DisplayTimezone
 {
@@ -24,9 +24,6 @@ final class DisplayTimezone
         return new DateTimeZone(self::name());
     }
 
-    /**
-     * Convert a stored (UTC) timestamp to the display timezone.
-     */
     public static function toLocal(DateTimeInterface $value): Carbon
     {
         return Carbon::instance($value)->setTimezone(self::zone());

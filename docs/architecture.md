@@ -1,6 +1,6 @@
 # Arquitetura
 
-> Princípio principal (PRD, seção 35): **a agenda é a interface principal;
+> Princípio principal (PRD, seção 33): **a agenda é a interface principal;
 > Atendimento é o domínio principal; Laravel/PostgreSQL é a fonte de verdade.**
 > Qualquer integração externa depende do domínio local, nunca o contrário.
 
@@ -29,23 +29,47 @@ nada de pastas vazias só para bater com o desenho.
 ```
 app/
 ├── Domain/
-│   ├── Users/Enums/UserRole.php        # papéis (admin, member, viewer)
-│   ├── Appointments/                   # Milestone 1
-│   ├── Clients/                        # Milestone 1
-│   ├── Services/                       # Milestone 1
-│   ├── Reporting/                      # Milestone 4
-│   └── Calendar/                       # Milestone 6
+│   ├── Appointments/
+│   │   ├── Actions/    # ScheduleAppointment, RescheduleAppointment (horário e/ou
+│   │   │               # responsável), ChangeAppointmentStatus,
+│   │   │               # MarkDocumentReceived, EnsureResponsibleIsAvailable
+│   │   ├── Enums/      # AppointmentStatus, ActivityType, LocationType
+│   │   └── Queries/    # AgendaAppointments, UpcomingAppointments
+│   ├── Clients/
+│   │   ├── Enums/      # ClientType
+│   │   └── Queries/    # ClientHistory, SearchClients
+│   └── Users/Enums/    # UserRole
 ├── Http/
-│   ├── Controllers/{Auth,ProfileController}
-│   └── Requests/
-├── Livewire/                           # Milestone 2 em diante
-├── Models/User.php
+│   ├── Controllers/    # Agenda, Appointment, Client, Dashboard (finos: só views/JSON)
+│   ├── Requests/Agenda # conversão de horário local → UTC na borda
+│   └── Resources/      # AgendaEventResource (formato do FullCalendar)
+├── Livewire/
+│   ├── Appointments/   # CreateAppointment, AppointmentDetails
+│   ├── Clients/        # ClientIndex, ClientEditor
+│   └── Forms/          # ClientForm (compartilhado pelas duas telas de cadastro)
+├── Models/             # todos os models Eloquent
+├── Policies/           # Appointment, Client, Service
 ├── Providers/
 └── Support/DisplayTimezone.php
 ```
 
-`User` permanece em `app/Models` (convenção do Laravel); o que é regra de
-domínio de usuário — hoje o enum `UserRole` — vive em `app/Domain/Users`.
+**Models ficam em `app/Models`**, na convenção do Laravel: factories, policies e
+route model binding funcionam sem configuração extra. `app/Domain` guarda o que
+é regra de negócio.
+
+## Onde cada regra mora
+
+| Regra | Lugar |
+| --- | --- |
+| Transições de status permitidas | `AppointmentStatus::allowedTransitions()` |
+| Período válido e conflito de horário | `EnsureResponsibleIsAvailable` + constraint no banco |
+| Checklist copiado no agendamento | `ScheduleAppointment` |
+| Auditoria | cada Action chama `Appointment::recordActivity()` |
+| Quem pode o quê | `app/Policies` |
+
+Todas as Actions lançam `ValidationException` com mensagem em pt-BR quando uma
+regra é violada, para que formulários Livewire e a API mostrem o erro no campo
+certo sem tradução extra.
 
 ## Idioma
 
@@ -66,16 +90,26 @@ Breeze (stack Blade), sem cadastro público e sem auto-exclusão de conta. Papel
 único por usuário e flag `active`. Ver
 [ADR 0002](decisions/0002-authentication-scope.md).
 
+## Frontend
+
+- Blade + Livewire 4 para formulários e telas interativas. Os nomes das
+  propriedades dos componentes são os mesmos das chaves das Actions
+  (`service_id`, `starts_at`…), então um erro de regra de negócio aparece no
+  campo certo sem mapeamento.
+- FullCalendar só na página da agenda (`resources/js/agenda.js`), carregado
+  pelo Vite como entrada separada.
+- Tokens de cor e tema: ver [ADR 0005](decisions/0005-visual-identity-and-theming.md).
+- Fuso horário na agenda e Alpine do Livewire: ver [ADR 0006](decisions/0006-agenda-in-the-browser.md).
+
 ## O que ainda não existe
 
 | Área | Milestone |
 | --- | --- |
-| `Client`, `Service`, `Appointment`, conflito de horário | 1 |
-| CRUD e histórico do atendido em Livewire | 2 |
-| Agenda com FullCalendar | 3 |
-| Relatórios e auditoria (`appointment_activities`) | 4 |
-| API `/api/v1` com Sanctum | 5 |
-| Google Calendar / ICS / Mundy | 6 |
+| Administração do catálogo de serviços e checklists pela interface | 2 (restante) |
+| Lembretes por e-mail e WhatsApp (`wa.me`) | 4 |
+| Painel de impacto e relatórios | 5 |
+| API `/api/v1` com Sanctum | 6 |
+| Google Calendar / ICS / Mundy / WhatsApp automático | 7 |
 
 Nenhuma dessas áreas deve ganhar contrato, interface ou tabela antes da hora —
 ver a seção 27 do PRD sobre abstração prematura.

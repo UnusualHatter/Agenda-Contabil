@@ -9,8 +9,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Milestone 0 guardrails: private areas require authentication and the
- * application exposes no public self-registration (RF-004).
+ * Private areas require authentication and there is no public
+ * self-registration.
  */
 class AccessControlTest extends TestCase
 {

@@ -10,8 +10,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
-// Public self-registration is intentionally disabled: accounts are created by
-// administrators. See docs/decisions/0002-authentication-scope.md.
+// No public self-registration: accounts are created by administrators.
 Route::middleware('guest')->group(function () {
     Route::get('login', [AuthenticatedSessionController::class, 'create'])
         ->name('login');

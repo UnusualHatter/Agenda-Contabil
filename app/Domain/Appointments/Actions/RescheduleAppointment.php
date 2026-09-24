@@ -1,0 +1,82 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Domain\Appointments\Actions;
+
+use App\Domain\Appointments\Enums\ActivityType;
+use App\Models\Appointment;
+use App\Models\User;
+use Carbon\CarbonInterface;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+
+/**
+ * Period and responsible change together because availability depends on
+ * both: checking the new person against the old period (or the old person
+ * against the new period) would report conflicts that do not exist.
+ */
+final class RescheduleAppointment
+{
+    public function __construct(private EnsureResponsibleIsAvailable $ensureResponsibleIsAvailable) {}
+
+    public function handle(
+        User $author,
+        Appointment $appointment,
+        CarbonInterface $startsAt,
+        CarbonInterface $endsAt,
+        ?User $responsible = null,
+    ): Appointment {
+        $responsible ??= $appointment->responsible;
+
+        $movesPeriod = ! $appointment->starts_at->equalTo($startsAt) || ! $appointment->ends_at->equalTo($endsAt);
+        $changesResponsible = $responsible->id !== $appointment->responsible_user_id;
+
+        if (! $movesPeriod && ! $changesResponsible) {
+            return $appointment;
+        }
+
+        if (! $appointment->status->canBeRescheduled()) {
+            throw ValidationException::withMessages([
+                'starts_at' => __('appointments.errors.not_editable'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($author, $appointment, $startsAt, $endsAt, $responsible, $movesPeriod, $changesResponsible): Appointment {
+            $this->ensureResponsibleIsAvailable->handle($responsible, $startsAt, $endsAt, ignore: $appointment);
+
+            $before = [
+                'starts_at' => $appointment->starts_at->toIso8601String(),
+                'ends_at' => $appointment->ends_at->toIso8601String(),
+                'responsible_user_id' => $appointment->responsible_user_id,
+            ];
+
+            $appointment->update([
+                'starts_at' => $startsAt,
+                'ends_at' => $endsAt,
+                'responsible_user_id' => $responsible->id,
+                'updated_by' => $author->id,
+            ]);
+
+            if ($movesPeriod) {
+                $appointment->recordActivity(
+                    ActivityType::Rescheduled,
+                    $author,
+                    ['starts_at' => $before['starts_at'], 'ends_at' => $before['ends_at']],
+                    ['starts_at' => $appointment->starts_at->toIso8601String(), 'ends_at' => $appointment->ends_at->toIso8601String()],
+                );
+            }
+
+            if ($changesResponsible) {
+                $appointment->recordActivity(
+                    ActivityType::ResponsibleChanged,
+                    $author,
+                    ['responsible_user_id' => $before['responsible_user_id']],
+                    ['responsible_user_id' => $responsible->id],
+                );
+            }
+
+            return $appointment;
+        });
+    }
+}
