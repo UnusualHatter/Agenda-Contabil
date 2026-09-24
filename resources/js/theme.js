@@ -1,7 +1,8 @@
 // Alpine component behind <x-theme-toggle>. The first paint is handled by
 // layouts/partials/theme.blade.php; this only reacts to the user's choice.
+import { prefersReducedMotion } from './motion';
+
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const options = ['light', 'dark', 'system'];
 
 const REVEAL_DURATION = 900;
@@ -53,7 +54,7 @@ function apply(choice, origin = null) {
     const theme = resolve(choice);
     const animate = origin !== null
         && 'startViewTransition' in document
-        && ! prefersReducedMotion.matches
+        && ! prefersReducedMotion()
         && document.documentElement.dataset.theme !== theme;
 
     if (! animate) {

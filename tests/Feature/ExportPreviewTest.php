@@ -39,6 +39,22 @@ class ExportPreviewTest extends TestCase
         $this->assertStringContainsString('"editable":false', $feed);
     }
 
+    public function test_the_sign_in_and_sign_out_curtains_exist_without_a_server(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $this->artisan('preview:export', ['url' => 'https://example.github.io/Agenda', '--output' => $this->output])
+            ->assertSuccessful();
+
+        $welcome = file_get_contents(base_path("{$this->output}/boas-vindas/index.html"));
+        $signedOut = file_get_contents(base_path("{$this->output}/sessao-encerrada/index.html"));
+
+        $this->assertStringContainsString('curtain--leave', $welcome);
+        $this->assertStringContainsString('Olá, Administrador', $welcome);
+        $this->assertStringContainsString('Sessão encerrada', $signedOut);
+        $this->assertStringContainsString('curtain--quick', $signedOut);
+    }
+
     public function test_it_refuses_to_publish_from_a_production_database(): void
     {
         $this->app->detectEnvironment(fn (): string => 'production');

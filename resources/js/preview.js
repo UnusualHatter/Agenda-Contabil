@@ -25,7 +25,22 @@ function fillDemoLogin() {
 }
 
 export function enablePreview(Livewire) {
-    const { previewDashboard, previewLogin } = document.documentElement.dataset;
+    const base = document.documentElement.dataset.previewBase;
+    const pages = {
+        welcome: `${base}/boas-vindas`,
+        signedOut: `${base}/sessao-encerrada`,
+    };
+
+    // The curtain pages are the dashboard and the login with the animation
+    // on top; once shown, the address goes back to the page itself.
+    const settledPath = {
+        '/boas-vindas/': `${base}/dashboard`,
+        '/sessao-encerrada/': `${base}/login`,
+    }[window.location.pathname.slice(new URL(base).pathname.replace(/\/$/, '').length)];
+
+    if (settledPath !== undefined) {
+        window.history.replaceState(null, '', settledPath);
+    }
 
     fillDemoLogin();
     document.addEventListener('livewire:navigated', fillDemoLogin);
@@ -38,21 +53,22 @@ export function enablePreview(Livewire) {
     });
 
     document.addEventListener('submit', (event) => {
-        if (event.target.matches('form[data-farewell]') && ! prefersReducedMotion()) {
-            return;
-        }
+        const signingOut = event.target.matches('form[data-farewell]');
 
-        if (event.target.matches('form[data-farewell]')) {
-            event.preventDefault();
-            window.location.href = previewLogin;
-
+        if (signingOut && ! prefersReducedMotion()) {
             return;
         }
 
         event.preventDefault();
 
+        if (signingOut) {
+            window.location.href = pages.signedOut;
+
+            return;
+        }
+
         if (event.target.matches('[data-login-form]')) {
-            Livewire.navigate(previewDashboard);
+            window.location.href = pages.welcome;
 
             return;
         }
@@ -62,6 +78,6 @@ export function enablePreview(Livewire) {
 
     document.addEventListener('farewell:done', (event) => {
         event.preventDefault();
-        window.location.href = previewLogin;
+        window.location.href = pages.signedOut;
     });
 }

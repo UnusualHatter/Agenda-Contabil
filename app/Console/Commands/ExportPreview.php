@@ -14,7 +14,9 @@ use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -62,9 +64,27 @@ final class ExportPreview extends Command
         $this->write($files, $output, '/', $login);
         $this->write($files, $output, '/login', $login);
 
+        $dashboard = $this->render($kernel, '/dashboard', $admin, $base);
+        $this->write($files, $output, '/dashboard', $dashboard);
+
         foreach ($this->privatePages() as $path) {
             $this->write($files, $output, $path, $this->render($kernel, $path, $admin, $base));
         }
+
+        // Without a server there is no session to carry the sign-in and
+        // sign-out curtains, so the preview gets pages that already have them.
+
+        $this->write($files, $output, '/boas-vindas', $this->withCurtain(
+            $dashboard,
+            __('session.welcome_title', ['name' => Str::before($admin->name, ' ')]),
+            __('session.welcome_subtitle'),
+        ));
+        $this->write($files, $output, '/sessao-encerrada', $this->withCurtain(
+            $login,
+            __('session.signed_out_title'),
+            __('session.signed_out_subtitle'),
+            'curtain--quick',
+        ));
 
         $files->put("{$output}/agenda/eventos.json", $this->agendaFeed($admin));
         $files->copyDirectory(public_path('build'), "{$output}/build");
@@ -84,7 +104,6 @@ final class ExportPreview extends Command
         $clients = Client::query()->pluck('id');
 
         return [
-            '/dashboard',
             '/agenda',
             '/atendidos',
             '/atendidos/novo',
@@ -115,7 +134,7 @@ final class ExportPreview extends Command
     {
         $html = preg_replace(
             '/<html([^>]*)>/',
-            '<html$1 data-preview data-preview-dashboard="'.e($base).'/dashboard" data-preview-login="'.e($base).'/login">',
+            '<html$1 data-preview data-preview-base="'.e($base).'">',
             $html,
             1,
         );
@@ -126,6 +145,16 @@ final class ExportPreview extends Command
         $html = preg_replace('/data-create-url="[^"]*"/', 'data-create-url=""', $html);
 
         return str_replace('</body>', view('preview.banner')->render().'</body>', $html);
+    }
+
+    private function withCurtain(string $html, string $title, string $subtitle, string $class = ''): string
+    {
+        $curtain = Blade::render(
+            '<x-curtain :title="$title" :subtitle="$subtitle" :class="$class" />',
+            ['title' => $title, 'subtitle' => $subtitle, 'class' => $class],
+        );
+
+        return str_replace('</body>', $curtain.'</body>', $html);
     }
 
     private function agendaFeed(User $admin): string
