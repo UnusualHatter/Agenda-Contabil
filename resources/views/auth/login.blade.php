@@ -5,7 +5,7 @@
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
-    <form method="POST" action="{{ route('login') }}">
+    <form method="POST" action="{{ route('login') }}" data-login-form x-data="{ sending: false }" x-on:submit="sending = true">
         @csrf
 
         <!-- Email Address -->
@@ -42,8 +42,12 @@
                 </a>
             @endif
 
-            <x-primary-button>
-                {{ __('Log in') }}
+            <x-primary-button x-bind:disabled="sending" x-bind:aria-busy="sending.toString()">
+                <span x-show="! sending">{{ __('Log in') }}</span>
+                <span x-show="sending" x-cloak class="inline-flex items-center gap-2">
+                    <x-application-logo class="size-4 animate-spin [animation-duration:1.4s]" />
+                    {{ __('session.signing_in') }}
+                </span>
             </x-primary-button>
         </div>
     </form>

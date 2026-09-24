@@ -1,6 +1,8 @@
 {{-- Project mark: a coin sign inside two turning arrows, redrawn from the printed material. --}}
 <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" {{ $attributes }}>
-    <path d="M7.1 17.8A18 18 0 0 1 40.9 17.8M37.1 14.6L40.9 17.8L41.8 12.9" />
-    <path d="M40.9 30.2A18 18 0 0 1 7.1 30.2M10.9 33.4L7.1 30.2L6.2 35.1" />
-    <path d="M28.6 18.6c-.9-1.5-2.6-2.4-4.6-2.4-2.7 0-4.6 1.4-4.6 3.5 0 4.8 9.6 2.6 9.6 7.9 0 2.2-2.1 3.8-5 3.8-2.2 0-4.1-.9-5-2.6M24 13v22" />
+    <g class="logo-arrows">
+        <path d="M7.1 17.8A18 18 0 0 1 40.9 17.8M37.1 14.6L40.9 17.8L41.8 12.9" />
+        <path d="M40.9 30.2A18 18 0 0 1 7.1 30.2M10.9 33.4L7.1 30.2L6.2 35.1" />
+    </g>
+    <path class="logo-coin" d="M28.6 18.6c-.9-1.5-2.6-2.4-4.6-2.4-2.7 0-4.6 1.4-4.6 3.5 0 4.8 9.6 2.6 9.6 7.9 0 2.2-2.1 3.8-5 3.8-2.2 0-4.1-.9-5-2.6M24 13v22" />
 </svg>

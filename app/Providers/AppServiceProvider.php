@@ -2,23 +2,30 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\Rules\Password;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
-    public function register(): void
-    {
-        //
-    }
-
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        $production = $this->app->isProduction();
+
+        // Lazy loading, silently dropped attributes and typos in attribute
+        // names fail loudly while developing instead of shipping.
+        Model::shouldBeStrict(! $production);
+
+        DB::prohibitDestructiveCommands($production);
+
+        URL::forceHttps($production);
+
+        Password::defaults(function () use ($production): Password {
+            $rule = Password::min(10)->letters()->numbers();
+
+            return $production ? $rule->uncompromised() : $rule;
+        });
     }
 }

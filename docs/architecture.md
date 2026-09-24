@@ -28,6 +28,7 @@ nada de pastas vazias só para bater com o desenho.
 
 ```
 app/
+├── Console/Commands/   # ExportPreview (prévia estática para o GitHub Pages)
 ├── Domain/
 │   ├── Appointments/
 │   │   ├── Actions/    # ScheduleAppointment, RescheduleAppointment (horário e/ou
@@ -41,6 +42,7 @@ app/
 │   └── Users/Enums/    # UserRole
 ├── Http/
 │   ├── Controllers/    # Agenda, Appointment, Client, Dashboard (finos: só views/JSON)
+│   ├── Middleware/     # SecurityHeaders, EnsureUserIsActive
 │   ├── Requests/Agenda # conversão de horário local → UTC na borda
 │   └── Resources/      # AgendaEventResource (formato do FullCalendar)
 ├── Livewire/
@@ -50,7 +52,7 @@ app/
 ├── Models/             # todos os models Eloquent
 ├── Policies/           # Appointment, Client, Service
 ├── Providers/
-└── Support/DisplayTimezone.php
+└── Support/            # DisplayTimezone, BlindIndex
 ```
 
 **Models ficam em `app/Models`**, na convenção do Laravel: factories, policies e
@@ -96,10 +98,27 @@ Breeze (stack Blade), sem cadastro público e sem auto-exclusão de conta. Papel
   propriedades dos componentes são os mesmos das chaves das Actions
   (`service_id`, `starts_at`…), então um erro de regra de negócio aparece no
   campo certo sem mapeamento.
-- FullCalendar só na página da agenda (`resources/js/agenda.js`), carregado
-  pelo Vite como entrada separada.
-- Tokens de cor e tema: ver [ADR 0005](decisions/0005-visual-identity-and-theming.md).
-- Fuso horário na agenda e Alpine do Livewire: ver [ADR 0006](decisions/0006-agenda-in-the-browser.md).
+- `resources/js/`: `app.js` inicia Livewire e os módulos; `theme.js` (troca
+  de tema), `navigation.js` (indicador de aba e entrada das páginas),
+  `scroll.js` (Lenis), `curtain.js` (entrada e saída), `agenda.js`
+  (FullCalendar, importado só na página da agenda) e `preview.js` (modo
+  prévia estática).
+- Tokens de cor, tema e movimento: ver [ADR 0005](decisions/0005-visual-identity-and-theming.md).
+- Fuso horário na agenda, Alpine do Livewire e navegação: ver [ADR 0006](decisions/0006-agenda-in-the-browser.md).
+
+## Segurança
+
+- `app/Http/Middleware/SecurityHeaders.php` e `EnsureUserIsActive.php`, no
+  grupo `web`.
+- Campos sensíveis criptografados nos models; busca de documento por
+  `App\Support\BlindIndex`.
+- Ver [ADR 0007](decisions/0007-security-and-data-protection.md).
+
+## Prévia estática
+
+`app/Console/Commands/ExportPreview.php` (`php artisan preview:export {url}`)
+renderiza as páginas reais com os dados de demonstração para o GitHub Pages;
+o workflow `.github/workflows/preview.yml` publica o resultado.
 
 ## O que ainda não existe
 

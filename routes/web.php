@@ -26,8 +26,8 @@ Route::middleware('auth')->group(function () {
 
     Route::controller(AgendaController::class)->group(function () {
         Route::get('/agenda', 'index')->name('agenda')->can('viewAny', Appointment::class);
-        Route::get('/agenda/eventos', 'events')->name('agenda.events')->can('viewAny', Appointment::class);
-        Route::patch('/atendimentos/{appointment}/horario', 'reschedule')->name('appointments.reschedule');
+        Route::get('/agenda/eventos', 'events')->name('agenda.events')->can('viewAny', Appointment::class)->middleware('throttle:120,1');
+        Route::patch('/atendimentos/{appointment}/horario', 'reschedule')->name('appointments.reschedule')->middleware('throttle:30,1');
     });
 
     Route::controller(AppointmentController::class)->group(function () {

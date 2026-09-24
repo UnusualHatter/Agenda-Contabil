@@ -51,4 +51,8 @@ Route::middleware('auth')->group(function () {
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    // Logging out takes a POST with a CSRF token; an old link or a crafted
+    // URL that reaches it with GET only goes back to the dashboard.
+    Route::get('logout', fn () => redirect()->route('dashboard'));
 });

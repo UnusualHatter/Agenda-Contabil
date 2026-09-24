@@ -17,7 +17,7 @@
 | `sessions` | Laravel | `SESSION_DRIVER=database`. |
 | `cache`, `cache_locks` | Laravel | `CACHE_STORE=database`. |
 | `jobs`, `job_batches`, `failed_jobs` | Laravel | `QUEUE_CONNECTION=database`. |
-| `clients` | Projeto | Atendidos PF (`individual`) ou PJ (`organization`). Soft delete. |
+| `clients` | Projeto | Atendidos PF (`individual`) ou PJ (`organization`). Soft delete. CPF/CNPJ e observações criptografados. |
 | `service_categories`, `services` | Projeto | Catálogo administrável; desativar em vez de apagar (RD-004). |
 | `service_documents` | Projeto | Checklist de documentos de cada serviço (RF-031). |
 | `appointments` | Projeto | Atendimentos. Soft delete. |
@@ -45,7 +45,10 @@
 `name` guarda o nome (PF) ou a razão social (PJ); `trade_name` o nome fantasia.
 A coluna `legal_name` do rascunho do PRD foi descartada por duplicar `name`.
 `accepts_reminders` nasce `false`: lembrete só com consentimento (RNF-007).
-Índices em `name`, `document`, `email` e `phone` para a busca (RF-011).
+`document` e `notes` são criptografados (cast `encrypted`); `document_index`
+guarda o HMAC dos dígitos do documento para a busca exata
+([ADR 0007](decisions/0007-security-and-data-protection.md)). Índices em
+`name`, `document_index`, `email` e `phone` para a busca (RF-011).
 
 ### `services`
 
@@ -57,8 +60,9 @@ sugerida no formulário (PRD, seção 21).
 
 `status` é o enum `AppointmentStatus`; `location_type` o enum `LocationType`.
 Não existe coluna de dia da semana: ele é derivado de `starts_at` no fuso de
-exibição (RF-021). Índices: `starts_at`, `status`,
-`(responsible_user_id, starts_at)` e `(client_id, starts_at)`.
+exibição (RF-021). `notes` e `service_details` são criptografados. Índices:
+`starts_at`, `status`, `(responsible_user_id, starts_at)` e
+`(client_id, starts_at)`.
 
 ## Planejado (não implementado)
 

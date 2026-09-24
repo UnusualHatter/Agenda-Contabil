@@ -62,6 +62,15 @@ class AuthenticationTest extends TestCase
         $response = $this->actingAs($user)->post('/logout');
 
         $this->assertGuest();
-        $response->assertRedirect('/');
+        $response->assertRedirect(route('login'));
+    }
+
+    public function test_a_get_request_to_logout_does_not_end_the_session(): void
+    {
+        $user = User::factory()->create();
+
+        $this->actingAs($user)->get('/logout')->assertRedirect(route('dashboard'));
+
+        $this->assertAuthenticatedAs($user);
     }
 }

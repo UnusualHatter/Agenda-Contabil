@@ -54,7 +54,7 @@
                                     <dt class="text-ink-muted">{{ __('clients.index.next_appointment') }}</dt>
                                     <dd class="text-ink">
                                         @if ($client->nextAppointment)
-                                            <a href="{{ route('appointments.show', $client->nextAppointment) }}" class="text-primary underline underline-offset-4 first-letter:uppercase">
+                                            <a href="{{ route('appointments.show', $client->nextAppointment) }}" wire:navigate class="text-primary underline underline-offset-4 first-letter:uppercase">
                                                 {{ App\Support\DisplayTimezone::toLocal($client->nextAppointment->starts_at)->translatedFormat('D, d/m · H:i') }}
                                             </a>
                                             · {{ $client->nextAppointment->service->name }}

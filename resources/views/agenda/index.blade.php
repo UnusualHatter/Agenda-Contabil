@@ -46,6 +46,4 @@
             ></div>
         </div>
     </div>
-
-    @vite('resources/js/agenda.js')
 </x-app-layout>

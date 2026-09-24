@@ -49,8 +49,12 @@ que cada tela invente suas próprias cores.
 9. **Rolagem sem repintura.** Brilho e textura de fundo ficam em camadas fixas
    próprias (sem `background-attachment: fixed`) e o menu fixo não usa
    `backdrop-filter`; os dois forçavam repintar a tela a cada quadro de
-   rolagem. `scroll-behavior: smooth` só para âncoras e rolagem por código;
-   a rolagem pela roda do mouse continua nativa.
+   rolagem. A roda do mouse ganha suavização com Lenis, que anima a rolagem
+   nativa (teclado, busca na página e barra de rolagem continuam normais) e
+   fica desligado com `prefers-reduced-motion`.
+10. **Entrada e saída.** Depois do login, uma cortina com o símbolo girando e
+    "Olá, Nome" se abre sobre o painel; no logout, ela se fecha a partir do
+    botão "Sair" antes de encerrar a sessão. Um clique pula a animação.
 
 ## Consequências
 

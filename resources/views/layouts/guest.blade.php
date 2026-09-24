@@ -21,6 +21,10 @@
                 {{ $slot }}
             </section>
         </div>
-        @livewireScriptConfig
+        @if (session('farewell'))
+            <x-curtain class="curtain--quick" :title="__('session.signed_out_title')" :subtitle="__('session.signed_out_subtitle')" />
+        @endif
+
+        @livewireScriptConfig(['nonce' => Vite::cspNonce()])
     </body>
 </html>

@@ -12,11 +12,17 @@ use App\Models\Service;
 use App\Models\ServiceDocument;
 use App\Models\User;
 use Carbon\CarbonInterface;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 final class ScheduleAppointment
 {
+    private const FIELDS = [
+        'client_id', 'service_id', 'responsible_user_id', 'starts_at', 'ends_at',
+        'service_details', 'location_type', 'location', 'notes',
+    ];
+
     public function __construct(private EnsureResponsibleIsAvailable $ensureResponsibleIsAvailable) {}
 
     /**
@@ -43,7 +49,7 @@ final class ScheduleAppointment
             $this->ensureResponsibleIsAvailable->handle($responsible, $attributes['starts_at'], $attributes['ends_at']);
 
             $appointment = Appointment::query()->create([
-                ...$attributes,
+                ...Arr::only($attributes, self::FIELDS),
                 'status' => AppointmentStatus::Scheduled,
                 'created_by' => $author->id,
             ]);

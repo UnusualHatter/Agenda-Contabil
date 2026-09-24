@@ -18,7 +18,7 @@
             <p class="mt-2 text-ink-muted">
                 {{ $appointment->service->category->name }} · {{ $appointment->service->name }}
             </p>
-            <a href="{{ route('clients.show', $appointment->client) }}" class="mt-2 inline-block text-sm text-primary underline underline-offset-4">
+            <a href="{{ route('clients.show', $appointment->client) }}" wire:navigate class="mt-2 inline-block text-sm text-primary underline underline-offset-4">
                 {{ __('appointments.show.client_page') }}
             </a>
         </div>

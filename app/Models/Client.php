@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Domain\Clients\Enums\ClientType;
+use App\Support\BlindIndex;
 use Database\Factories\ClientFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Builder;
@@ -23,10 +24,21 @@ class Client extends Model
     /** @use HasFactory<ClientFactory> */
     use HasFactory, SoftDeletes;
 
+    protected static function booted(): void
+    {
+        static::saving(function (Client $client): void {
+            if ($client->isDirty('document')) {
+                $client->document_index = BlindIndex::forDocument($client->document);
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
             'type' => ClientType::class,
+            'document' => 'encrypted',
+            'notes' => 'encrypted',
             'accepts_reminders' => 'boolean',
             'active' => 'boolean',
         ];

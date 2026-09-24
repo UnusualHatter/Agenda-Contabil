@@ -1,5 +1,5 @@
 {{-- Runs before the stylesheet so the page never flashes the wrong theme. --}}
-<script>
+<script nonce="{{ Vite::cspNonce() }}" data-navigate-once>
     (() => {
         const stored = localStorage.getItem('theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

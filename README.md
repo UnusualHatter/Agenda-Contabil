@@ -12,10 +12,18 @@ Requisitos completos: [`PRD.md`](PRD.md).
 
 ## Status
 
-**Milestones 1 a 3** concluídos: domínio (atendidos, catálogo com checklist de
-documentos, conflito de horário garantido também pelo banco, status e
-auditoria), telas operacionais e agenda com FullCalendar (mês, semana, dia e
-lista; clicar para agendar, arrastar para reagendar). Tema claro/escuro.
+**Milestones 1 a 3** concluídos:
+
+- domínio: atendidos, catálogo de serviços com checklist de documentos,
+  conflito de horário garantido também pelo banco, status e auditoria;
+- telas: painel, atendidos, atendimentos com checklist e histórico, detalhes
+  que abrem no próprio lugar;
+- agenda com FullCalendar (mês, semana, 3 dias, dia e lista): clicar para
+  agendar, arrastar para reagendar;
+- identidade visual serifada com tema claro/escuro, navegação sem recarregar
+  a página e proteção de dados pessoais (ver *Segurança* abaixo).
+
+Próximos passos: lembretes (Milestone 4) e painel de impacto (Milestone 5).
 Ver [`docs/architecture.md`](docs/architecture.md).
 
 Em desenvolvimento, `php artisan migrate:fresh --seed` também cria uma agenda
@@ -102,7 +110,7 @@ primeiro administrador via `php artisan tinker`:
 App\Models\User::create([
     'name' => 'Nome',
     'email' => 'email@exemplo.com',
-    'password' => 'senha-forte',
+    'password' => 'troque-esta-senha-2026',
     'role' => App\Domain\Users\Enums\UserRole::Admin,
 ]);
 ```
@@ -128,17 +136,61 @@ HTTP / Livewire  →  Actions de domínio  →  Models  →  PostgreSQL
                   Policies / Enums / Queries
 ```
 
-- `app/Domain/` — regras de negócio por área (`Users` hoje; `Appointments`,
-  `Clients`, `Services`, `Reporting`, `Calendar` chegam nos próximos
-  milestones).
-- `app/Http/` — controllers, form requests e resources.
-- `app/Livewire/` — componentes interativos (a partir do Milestone 2).
-- `app/Support/` — utilidades transversais, como `DisplayTimezone`.
-- `docs/` — arquitetura, banco e ADRs.
+- `app/Domain/` — regras de negócio: Actions, Enums e Queries de
+  `Appointments`, `Clients` e `Users`.
+- `app/Models/` — models Eloquent; `app/Policies/` — quem pode o quê.
+- `app/Http/` — controllers finos, form requests, resources e middlewares de
+  segurança.
+- `app/Livewire/` — formulários e telas interativas.
+- `app/Support/` — `DisplayTimezone` (UTC ↔ São Paulo) e `BlindIndex`.
+- `resources/js/` — tema, navegação, agenda (carregada só na página dela),
+  cortinas de entrada/saída e modo prévia.
+- `docs/` — arquitetura, banco, ADRs e tecnologias utilizadas.
 
 **Idioma:** interface em pt-BR, código em inglês. **Fuso:** persistência em
 UTC, exibição em `America/Sao_Paulo`
 ([ADR 0001](docs/decisions/0001-timezone-strategy.md)).
+
+## Segurança e proteção de dados
+
+- CPF/CNPJ e observações livres criptografados no banco; o documento continua
+  localizável pela busca exata através de um índice HMAC.
+- Cabeçalhos de segurança em todas as respostas (CSP com nonce, anti-iframe,
+  `nosniff`, HSTS em HTTPS) e páginas logadas sem cache no navegador.
+- Sessão criptografada, com 60 minutos e encerrada ao fechar o navegador;
+  contas desativadas perdem a sessão no próximo clique.
+- Senhas com no mínimo 10 caracteres, letras e números; em produção, senhas
+  que aparecem em vazamentos conhecidos são recusadas.
+- Limite de tentativas no login e nas rotas da agenda.
+
+Detalhes em [ADR 0007](docs/decisions/0007-security-and-data-protection.md).
+Em produção, defina `APP_ENV=production`, `APP_DEBUG=false` e
+`SESSION_SECURE_COOKIE=true`, e sirva a aplicação apenas por HTTPS.
+
+## Prévia no GitHub Pages
+
+O GitHub Pages hospeda apenas arquivos estáticos, então a prévia é gerada pela
+própria aplicação: `php artisan preview:export` renderiza as páginas reais
+(mesmas rotas, views e assets) com os dados de demonstração e grava HTML
+estático em `build/preview/`. Navegação, agenda, detalhes, tema e animações
+funcionam; ações que gravam dados ficam desativadas e um aviso informa isso.
+O comando se recusa a rodar em produção, para que dados reais nunca sejam
+publicados.
+
+**Publicar:** em *Settings → Pages → Build and deployment*, escolha a fonte
+**GitHub Actions**. A cada push em `main`, o workflow
+[`preview.yml`](.github/workflows/preview.yml) gera e publica a prévia em
+`https://<usuário>.github.io/<repositório>/`. Na prévia, o formulário de
+login já vem preenchido com a conta de demonstração.
+
+**Gerar localmente:**
+
+```sh
+php artisan migrate:fresh --seed
+npm run build
+php artisan preview:export http://127.0.0.1:8090
+python3 -m http.server 8090 -d build/preview
+```
 
 ## Documentação
 
@@ -146,5 +198,6 @@ UTC, exibição em `America/Sao_Paulo`
 - [`docs/architecture.md`](docs/architecture.md) — estrutura do código
 - [`docs/database.md`](docs/database.md) — esquema atual e planejado
 - [`docs/decisions/`](docs/decisions/) — ADRs
+- [`docs/tecnologias-e-referencias.md`](docs/tecnologias-e-referencias.md) —
+  bibliotecas, técnicas e referências utilizadas
 - [`CONTRIBUTING.md`](CONTRIBUTING.md) — branches, commits, Definition of Done
-# Agenda-Contabil

@@ -11,6 +11,6 @@
     };
 @endphp
 
-<a {{ $attributes->merge(['class' => "press inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold {$dimensions} {$colors}"]) }}>
+<a wire:navigate {{ $attributes->merge(['class' => "press inline-flex items-center justify-center gap-2 rounded-full text-sm font-semibold {$dimensions} {$colors}"]) }}>
     {{ $slot }}
 </a>

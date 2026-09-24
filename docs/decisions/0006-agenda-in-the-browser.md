@@ -29,6 +29,13 @@ um plugin extra (Luxon ou Moment).
    /atendimentos/{id}/horario` chama a mesma `RescheduleAppointment` das
    telas. Em conflito, a resposta 422 traz a mensagem da regra e o evento
    volta para o lugar.
+4. **Navegação sem recarregar.** Links internos usam `wire:navigate`: CSS,
+   fontes e JavaScript ficam carregados entre as páginas (sem o texto
+   "piscar" com a fonte reserva) e a troca é animada em qualquer navegador,
+   com o indicador de aba deslizando até a aba nova. O calendário é importado
+   sob demanda em `livewire:navigated` e desmontado em `livewire:navigating`.
+   O script inline do tema é marcado `data-navigate-once`: cada página traz
+   um nonce de CSP novo e ele só precisa rodar no primeiro carregamento.
 
 ## Consequências
 

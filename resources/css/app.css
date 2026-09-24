@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import '@fontsource-variable/fraunces/soft.css';
 @import '@fontsource-variable/literata/opsz.css';
+@import 'lenis/dist/lenis.css';
 
 @plugin '@tailwindcss/forms';
 
@@ -203,34 +204,10 @@
 }
 
 /*
- * Motion. Page changes cross-fade and the active tab slides between menu
- * items (browsers without cross-document view transitions simply skip it).
- * Everything is off for people who ask the system for reduced motion.
+ * Motion. Page changes and the sliding menu indicator are driven by
+ * navigation.js; everything is off for people who ask for reduced motion.
  */
 @media (prefers-reduced-motion: no-preference) {
-    html {
-        scroll-behavior: smooth;
-    }
-
-    @view-transition {
-        navigation: auto;
-    }
-
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-        animation-duration: 200ms;
-        animation-timing-function: var(--ease-out-soft);
-    }
-
-    ::view-transition-group(nav-active) {
-        animation-duration: 280ms;
-        animation-timing-function: var(--ease-out-soft);
-    }
-
-    .nav-active {
-        view-transition-name: nav-active;
-    }
-
     .rise-in {
         animation: rise-in 360ms var(--ease-out-soft) both;
     }
@@ -239,18 +216,12 @@
 /*
  * Theme switch: theme.js wraps the change in a view transition and grows a
  * circle over the new snapshot. Only one composited layer animates, so it
- * stays smooth however long the page is. The default cross-fade is turned off
- * for that transition only, and the menu pill joins the page snapshot instead
- * of animating on its own.
+ * stays smooth however long the page is.
  */
 .theme-transition::view-transition-old(root),
 .theme-transition::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
-}
-
-.theme-transition .nav-active {
-    view-transition-name: none;
 }
 
 /* Every colour token changes at once; letting ~100 hover transitions chase
@@ -260,6 +231,113 @@
 .theme-transition *::before,
 .theme-transition *::after {
     transition: none !important;
+}
+
+/*
+ * Sign-in and sign-out curtain. "leave" opens onto the page after a pause;
+ * "enter" closes over it from the pressed button (--origin-x / --origin-y).
+ */
+.curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    background: radial-gradient(circle at 50% 42%, var(--surface), var(--sand) 55%, var(--canvas));
+}
+
+.curtain__content {
+    @apply grid justify-items-center gap-3 px-6 text-center;
+}
+
+.curtain__logo {
+    @apply size-20 text-primary;
+}
+
+.curtain__logo .logo-arrows {
+    transform-origin: 24px 24px;
+    animation: logo-turn 1800ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.curtain__logo .logo-coin {
+    transform-origin: 24px 24px;
+    animation: logo-coin 900ms var(--ease-out-soft) 300ms both;
+}
+
+.curtain__title {
+    @apply font-display text-4xl text-ink sm:text-5xl;
+    font-variation-settings: 'SOFT' 100;
+    animation: rise-in 800ms var(--ease-out-soft) 350ms both;
+}
+
+.curtain__subtitle {
+    @apply text-lg text-ink-muted;
+    animation: rise-in 800ms var(--ease-out-soft) 600ms both;
+}
+
+.curtain--leave {
+    animation: curtain-leave 1100ms cubic-bezier(0.65, 0, 0.35, 1) 1700ms both;
+}
+
+.curtain--quick {
+    animation-delay: 900ms;
+}
+
+.curtain--enter {
+    animation: curtain-enter 900ms cubic-bezier(0.65, 0, 0.35, 1) both;
+}
+
+.curtain--enter .curtain__logo .logo-arrows,
+.curtain--enter .curtain__logo .logo-coin,
+.curtain--enter .curtain__title,
+.curtain--enter .curtain__subtitle {
+    animation-delay: 450ms;
+}
+
+/* The page under a welcome curtain arrives as the curtain opens. */
+body:has(.curtain--leave:not(.curtain--quick)) main {
+    animation: rise-in 900ms var(--ease-out-soft) 2100ms both;
+}
+
+@keyframes curtain-leave {
+    from {
+        clip-path: circle(150vmax at 50% 42%);
+    }
+
+    to {
+        clip-path: circle(0 at 50% 42%);
+    }
+}
+
+@keyframes curtain-enter {
+    from {
+        clip-path: circle(0 at var(--origin-x, 50%) var(--origin-y, 50%));
+    }
+
+    to {
+        clip-path: circle(150vmax at var(--origin-x, 50%) var(--origin-y, 50%));
+    }
+}
+
+@keyframes logo-turn {
+    from {
+        transform: rotate(-270deg) scale(0.7);
+        opacity: 0;
+    }
+}
+
+@keyframes logo-coin {
+    from {
+        transform: scale(0.4);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .curtain {
+        display: none;
+    }
 }
 
 /* Document checklist */
@@ -357,7 +435,7 @@
     --fc-neutral-bg-color: var(--sunken);
     --fc-neutral-text-color: var(--ink-muted);
     --fc-list-event-hover-bg-color: var(--sunken);
-    --fc-today-bg-color: color-mix(in oklab, var(--sand) 55%, transparent);
+    --fc-today-bg-color: color-mix(in oklab, var(--primary) 6%, transparent);
     --fc-now-indicator-color: var(--clay);
     --fc-highlight-color: color-mix(in oklab, var(--primary) 15%, transparent);
     --fc-non-business-color: color-mix(in oklab, var(--sunken) 55%, transparent);
@@ -415,6 +493,12 @@
     @apply text-ink first-letter:uppercase;
 }
 
+/* Today: a faint column tint and the date itself in a pill. */
+.fc .fc-day-today .fc-col-header-cell-cushion,
+.fc .fc-day-today .fc-daygrid-day-number {
+    @apply rounded-full bg-primary-soft px-2.5 text-primary;
+}
+
 .fc .fc-timegrid-slot-label-cushion,
 .fc .fc-list-event-time {
     @apply whitespace-nowrap text-ink-muted;
@@ -445,6 +529,11 @@
     }
 }
 
+/* An hour is 64px tall: room for time, name on two lines and the service. */
+.fc .fc-timegrid-slot {
+    height: 2rem;
+}
+
 /*
  * Side-by-side appointments get a gutter so neither one covers the other;
  * slotEventOverlap is off in agenda.js for the same reason.
@@ -462,13 +551,29 @@
     --tone: var(--primary);
     --tone-soft: var(--primary-soft);
 
-    border-inline-start: 3px solid var(--tone) !important;
+    border: 0 !important;
     background: var(--tone-soft) !important;
     border-radius: 0.5rem;
     cursor: pointer;
     transition:
         transform 160ms var(--ease-out-soft),
         box-shadow 160ms var(--ease-out-soft);
+}
+
+/* Status bar drawn inside the card, so rounded corners never bend it. */
+.fc-timegrid-event.agenda-event::before,
+.fc-daygrid-event.agenda-event::before {
+    content: '';
+    position: absolute;
+    inset-block: 4px;
+    inset-inline-start: 4px;
+    width: 3px;
+    border-radius: 9999px;
+    background: var(--tone);
+}
+
+.fc-daygrid-event.agenda-event {
+    position: relative;
 }
 
 .agenda-event:hover {
@@ -511,38 +616,52 @@
 }
 
 .agenda-event .fc-event-main {
-    @apply overflow-hidden px-1.5 py-1 text-ink;
+    @apply overflow-hidden py-1 ps-3 pe-1.5 text-ink;
+    container-type: inline-size;
 }
 
 .agenda-event__time {
-    @apply truncate text-xs text-ink-muted;
+    @apply truncate text-xs font-semibold;
+    color: var(--tone);
 }
 
 .agenda-event__title {
-    @apply truncate font-semibold;
+    @apply line-clamp-2 font-semibold leading-snug break-words;
 }
 
 .agenda-event__meta {
-    @apply truncate text-xs text-ink-muted;
+    @apply mt-0.5 truncate text-xs text-ink-muted;
 }
 
-/* Short slots only have room for one line: time and name side by side. */
+/* Short or narrow cards keep the name and drop the service. */
 .fc-timegrid-event-short .agenda-event__meta {
     @apply hidden;
 }
 
-/* Month view */
+@container (max-width: 7.5rem) {
+    .agenda-event__meta,
+    .agenda-event__end {
+        @apply hidden;
+    }
+
+    .agenda-event__title {
+        @apply text-xs;
+    }
+}
+
+/* Month view: time on top, the name below on up to two lines. */
 .fc-daygrid-event.agenda-event {
-    @apply mx-1 mb-0.5 px-1.5 py-0.5;
+    @apply mx-1 mb-1 whitespace-normal;
 }
 
-.agenda-event__line {
-    @apply flex min-w-0 items-baseline gap-1.5 text-xs;
+/* Month cells size to their content; the container query above measures the
+   time grid's fixed-width cards only. */
+.fc-daygrid-event.agenda-event .fc-event-main {
+    container-type: normal;
 }
 
-.agenda-event__line .agenda-event__time {
-    @apply shrink-0 font-semibold;
-    color: var(--tone);
+.fc-daygrid-event .agenda-event__title {
+    @apply text-xs;
 }
 
 .fc .fc-daygrid-more-link {

@@ -36,6 +36,8 @@ class Appointment extends Model
             'ends_at' => 'datetime',
             'status' => AppointmentStatus::class,
             'location_type' => LocationType::class,
+            'service_details' => 'encrypted',
+            'notes' => 'encrypted',
         ];
     }
 

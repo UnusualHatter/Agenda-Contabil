@@ -17,6 +17,14 @@
                 {{ $slot }}
             </main>
         </div>
-        @livewireScriptConfig
+        @if (session('welcome'))
+            <x-curtain :title="__('session.welcome_title', ['name' => Str::before(Auth::user()->name, ' ')])" :subtitle="__('session.welcome_subtitle')" />
+        @endif
+
+        <template data-farewell>
+            <x-curtain phase="enter" :title="__('session.farewell_title', ['name' => Str::before(Auth::user()->name, ' ')])" :subtitle="__('session.farewell_subtitle')" />
+        </template>
+
+        @livewireScriptConfig(['nonce' => Vite::cspNonce()])
     </body>
 </html>

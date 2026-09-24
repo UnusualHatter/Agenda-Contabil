@@ -1,9 +1,10 @@
 <nav x-data="{ open: false }" class="sticky top-0 z-40 border-b border-line bg-surface/95">
     <div class="mx-auto flex h-18 max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
         <div class="flex items-center gap-8">
-            <a href="{{ route('dashboard') }}"><x-brand /></a>
+            <a href="{{ route('dashboard') }}" wire:navigate><x-brand /></a>
 
-            <div class="hidden gap-1 lg:flex">
+            <div class="relative hidden gap-1 lg:flex">
+                <span data-nav-indicator class="absolute inset-y-0 start-0 rounded-full bg-primary-soft" aria-hidden="true"></span>
                 <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('nav.dashboard') }}
                 </x-nav-link>
@@ -30,17 +31,16 @@
                 </x-slot>
 
                 <x-slot name="content">
-                    <x-dropdown-link :href="route('profile.edit')">
+                    <x-dropdown-link :href="route('profile.edit')" wire:navigate>
                         {{ __('Profile') }}
                     </x-dropdown-link>
 
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" data-farewell>
                         @csrf
 
-                        <x-dropdown-link :href="route('logout')"
-                                onclick="event.preventDefault(); this.closest('form').submit();">
+                        <button type="submit" class="press block w-full rounded-lg px-3 py-2 text-start text-sm text-ink hover:bg-sunken">
                             {{ __('Log Out') }}
-                        </x-dropdown-link>
+                        </button>
                     </form>
                 </x-slot>
             </x-dropdown>
@@ -81,13 +81,12 @@
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
 
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route('logout') }}" data-farewell>
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault(); this.closest('form').submit();">
+                    <button type="submit" class="press block w-full rounded-soft px-4 py-3 text-start text-base font-medium text-ink-muted hover:bg-sunken hover:text-ink">
                         {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    </button>
                 </form>
             </div>
         </div>
