@@ -1,4 +1,4 @@
-# Agenda Contábil
+# CadernetaSEF - Agendamento e Organização
 
 Sistema web para agendar e acompanhar os atendimentos do projeto de extensão
 Sustentabilidade Econômica e Financeira, do curso de Ciências Contábeis da
