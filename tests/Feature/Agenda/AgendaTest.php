@@ -27,6 +27,13 @@ class AgendaTest extends TestCase
             ->assertDontSee('Novo atendimento');
     }
 
+    public function test_the_page_tells_the_calendar_which_timezone_is_today(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->get('/agenda')
+            ->assertSee('data-timezone="America/Sao_Paulo"', escape: false);
+    }
+
     public function test_events_are_sent_as_sao_paulo_wall_times(): void
     {
         $appointment = Appointment::factory()->between('2026-10-05 13:00', '2026-10-05 14:00')->create();

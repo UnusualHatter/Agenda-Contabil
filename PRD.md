@@ -206,7 +206,7 @@ Tokens nunca devem ser armazenados em texto puro.
 
 ## 13. Stack técnica
 
-**Backend e Web:** PHP 8.4+; Laravel 13 ou versão estável disponível; Laravel Livewire; Blade; Tailwind CSS.
+**Backend e Web:** PHP 8.3+; Laravel 13 ou versão estável disponível; Laravel Livewire; Blade; Tailwind CSS.
 
 **Admin:** usar Filament somente onde reduzir significativamente boilerplate. Não duplicar telas entre Filament e aplicação principal sem necessidade.
 
@@ -224,19 +224,22 @@ Laravel convencional com separação de domínio suficiente para evitar controll
 
 ```
 app/
+├── Console/Commands/
 ├── Domain/
 │   ├── Appointments/{Actions, Enums, Queries}
 │   ├── Clients/{Enums, Queries}
-│   ├── Reporting/Queries
-│   └── Calendar/{Contracts, Data, Providers}
+│   ├── Services/Actions
+│   └── Users/Enums
 ├── Http/
-│   ├── Controllers/{Api/V1, Web}
+│   ├── Controllers/
+│   ├── Middleware/
 │   ├── Requests/
 │   └── Resources/
-├── Livewire/{Agenda, Appointments, Clients, Dashboard}
+├── Livewire/{Appointments, Clients, Services, Forms}
 ├── Models/            # todos os models Eloquent
 ├── Notifications/
 ├── Policies/
+├── Rules/
 ├── Providers/
 └── Support/
 ```
@@ -251,7 +254,7 @@ app/
 /
 ├── app/  bootstrap/  config/
 ├── database/{factories, migrations, seeders}
-├── docs/{architecture.md, database.md, decisions/}
+├── docs/screenshots/
 ├── public/
 ├── resources/{css, js/calendar, views}
 ├── routes/{web.php, api.php, console.php}
@@ -260,7 +263,7 @@ app/
 │   ├── Feature/{Appointments, Auth, Clients, Reports}
 │   └── Unit/
 ├── .editorconfig  .env.example  .gitignore
-├── CONTRIBUTING.md  PRD.md  README.md
+├── PRD.md  README.md
 ├── composer.json  package.json  phpunit.xml
 ```
 
@@ -268,7 +271,7 @@ app/
 
 ### `users`
 
-Model padrão do Laravel acrescido de `role` e `active`. Preferencialmente implementar papéis de maneira simples no MVP. Caso seja utilizada uma biblioteca de permissions, justificar em ADR.
+Model padrão do Laravel acrescido de `role` e `active`. Preferencialmente implementar papéis de maneira simples no MVP. Caso seja utilizada uma biblioteca de permissions, justificar no README.
 
 ### `clients`
 
@@ -450,7 +453,7 @@ Não exibir dados sensíveis desnecessariamente em listas.
 
 ## 23. Design
 
-**Direção:** quente, orgânico e institucional — parece papel impresso, não painel de software. Ver ADR 0005.
+**Direção:** quente, orgânico e institucional — parece papel impresso, não painel de software.
 
 - **Tipografia serifada.** Fraunces (títulos, eixo `SOFT` para terminais arredondados) e Literata (texto, desenhada para leitura em tela, com tamanho óptico). Fontes empacotadas pelo Vite, sem requisição a serviços externos (RNF-007).
 - **Paleta.** Neutros de papel (claro) e madeira escura (escuro); verde-azulado vindo do material impresso do projeto como cor principal; terracota, musgo e ocre para destaques e estados.
@@ -462,13 +465,13 @@ Não exibir dados sensíveis desnecessariamente em listas.
 
 ## 24. Out of scope do MVP
 
-Não implementar no primeiro milestone: aplicativo Android; sincronização Mundy; Google Calendar; Outlook; CalDAV; pagamento; chat; videoconferência; CRM completo; armazenamento de documentos fiscais (o checklist registra apenas a entrega); envio automático por WhatsApp sem conta Business do cliente; automações complexas; IA; BI avançado; multi-tenant; divulgação e inscrição em oficinas e mutirões (candidata a milestone futuro).
+Não implementar no primeiro milestone: aplicativo Android; sincronização Mundy; Google Calendar; Outlook; CalDAV; pagamento; chat; videoconferência; CRM completo; armazenamento de documentos fiscais (o checklist registra apenas a entrega); envio automático por WhatsApp sem conta Business do cliente; automações complexas; BI avançado; multi-tenant; divulgação e inscrição em oficinas e mutirões (candidata a milestone futuro).
 
 A arquitetura não deve impedir essas evoluções.
 
 ## 25. Milestones
 
-### Milestone 0 — Bootstrap do repositório
+### Milestone 0 — Bootstrap do repositório (concluído)
 
 **Objetivo:** projeto executa localmente e CI passa.
 
@@ -484,25 +487,25 @@ npm run build
 php artisan test
 ```
 
-### Milestone 1 — Domínio principal
+### Milestone 1 — Domínio principal (concluído)
 
 **Entregáveis:** `Client`; `ServiceCategory`; `Service`; `ServiceDocument`; `Appointment`; `AppointmentDocument`; `AppointmentActivity`; enums com transições de status; actions de agendar, reagendar, trocar responsável e mudar status; conflito de horários na aplicação e no banco; policies; seed do catálogo e dos checklists; testes.
 
 **Aceite:** é possível cadastrar atendido e atendimento pelo backend/testes; o checklist é copiado ao agendar; conflitos são bloqueados.
 
-### Milestone 2 — Interface operacional
+### Milestone 2 — Interface operacional (concluído)
 
 **Entregáveis:** dashboard básico; CRUD de atendidos; CRUD de atendimentos; busca; filtros; validação; histórico do atendido; marcação de documentos entregues; administração de serviços e checklists.
 
 **Aceite:** usuário consegue realizar o fluxo operacional sem usar banco/CLI, seguindo os princípios da seção 21.
 
-### Milestone 3 — Agenda
+### Milestone 3 — Agenda (concluído)
 
 **Entregáveis:** FullCalendar; month/week/day (lista no celular); criação a partir de slot; edição; reagendamento por arrastar; filtros por responsável/status; detalhes.
 
 **Aceite:** agenda reflete corretamente registros do banco e respeita autorização.
 
-### Milestone 4 — Lembretes
+### Milestone 4 — Lembretes (concluído)
 
 **Entregáveis:** comando agendado de lembretes; notificação por e-mail com checklist; links assinados de confirmação/cancelamento; botão WhatsApp (`wa.me`); `reminder_sent_at`.
 
@@ -545,7 +548,6 @@ O projeto será mantido por turmas diferentes ao longo dos semestres. O código 
 - **Regras de domínio moram em um lugar só.** Transições de status ficam no enum `AppointmentStatus`; conflito de horário em uma única classe; indicadores em classes de `Queries`. Controllers e componentes Livewire apenas recebem entrada e chamam essas classes.
 - **Regras críticas também no banco:** `CHECK`, chaves estrangeiras e *exclusion constraint* garantem integridade mesmo que alguém esqueça a regra no código.
 - **Textos de interface em `lang/pt_BR`**, nunca em Blade ou PHP.
-- **Toda decisão estrutural vira ADR** em `docs/decisions/`.
 
 **Regras de estilo:**
 

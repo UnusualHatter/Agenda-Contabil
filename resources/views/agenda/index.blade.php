@@ -36,6 +36,7 @@
 
             <div
                 data-agenda
+                data-timezone="{{ App\Support\DisplayTimezone::name() }}"
                 data-events-url="{{ route('agenda.events') }}"
                 data-create-url="{{ $canCreate ? route('appointments.create') : '' }}"
                 data-reschedule-url="{{ route('appointments.reschedule', ['appointment' => '__ID__']) }}"

@@ -73,7 +73,7 @@ return [
     |--------------------------------------------------------------------------
     |
     | Timestamps are persisted in UTC (see the option above) and rendered to
-    | users in this timezone. See docs/decisions/0001-timezone-strategy.md.
+    | users in this timezone.
     |
     */
 

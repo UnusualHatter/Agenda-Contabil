@@ -1,232 +1,264 @@
-# Agenda e Gestão de Atendimentos
+# Agenda Contábil
 
-Plataforma de agenda e gestão de atendimentos do projeto de **Sustentabilidade
-Econômica e Financeira**: cadastro de atendidos (pessoas físicas e jurídicas),
-agendamento por demanda e responsável, histórico e indicadores.
+Sistema web para agendar e acompanhar os atendimentos do projeto de extensão
+Sustentabilidade Econômica e Financeira, do curso de Ciências Contábeis da
+Feevale. O projeto, coordenado pela Profa. Maristela Mercedes Bauer, orienta
+pessoas físicas, MEIs, pequenas empresas e entidades sem fins lucrativos do Vale
+do Rio dos Sinos em imposto de renda, guias de tributos, fluxo de caixa,
+orçamento e prestação de contas.
 
-A agenda é a interface principal, mas o domínio central é o **Atendimento**. O
-banco PostgreSQL local é a fonte canônica dos dados — integrações com
-calendários externos, quando existirem, dependem dele e nunca o contrário.
+Há uma [prévia no GitHub Pages](https://unusualhatter.github.io/Agenda-Contabil/)
+com dados fictícios. O login já vem preenchido e nada do que você mudar lá é
+salvo.
 
-Requisitos completos: [`PRD.md`](PRD.md).
+![Agenda da semana](docs/screenshots/agenda.png)
 
-## Status
+## Para que serve
 
-**Milestones 1 a 4** concluídos:
+Os atendimentos acontecem na universidade, em espaços de parceiros, como a Sala
+do Empreendedor de Campo Bom, e on-line. A agenda reúne tudo num lugar só: quem
+será atendido, por quem, quando, sobre o quê e com quais documentos.
 
-- domínio: atendidos, catálogo de serviços com checklist de documentos,
-  conflito de horário garantido também pelo banco, status e auditoria;
-- telas: painel, atendidos, atendimentos com checklist e histórico, detalhes
-  que abrem no próprio lugar;
-- agenda com FullCalendar (mês, semana, 3 dias, dia e lista): clicar para
-  agendar, arrastar para reagendar;
-- catálogo de serviços e checklists editável pelo administrador
-  (`/configuracoes/servicos`);
-- lembretes: e-mail automático 24 h antes, com os documentos a trazer e um
-  link para o atendido confirmar ou cancelar; botão de WhatsApp;
-- identidade visual serifada com tema claro/escuro, navegação sem recarregar
-  a página e proteção de dados pessoais (ver *Segurança* abaixo).
+A equipe pode:
 
-Próximo passo: painel de impacto e relatórios (Milestone 5).
-Ver [`docs/architecture.md`](docs/architecture.md).
+- cadastrar atendidos, pessoas físicas ou jurídicas, e consultar o histórico de
+  cada um;
+- agendar um atendimento escolhendo atendido, demanda, horário e responsável. O
+  sistema recusa o horário se a mesma pessoa já tiver outro atendimento nele;
+- ver a agenda por mês, semana, três dias, dia ou lista, clicar num horário livre
+  para agendar e arrastar um atendimento para trocar o horário;
+- acompanhar cada atendimento do agendamento à conclusão, com histórico de quem
+  mudou o quê.
 
-Em desenvolvimento, `php artisan migrate:fresh --seed` também cria uma agenda
-de demonstração com duas semanas de atendimentos ao redor da data atual
-(`DemoAgendaSeeder`, nunca roda em produção).
+Cada demanda tem uma lista de documentos a levar (o informe de rendimentos no
+IRPF, o CCMEI no atendimento de MEI, o estatuto na prestação de contas de uma
+ONG). A lista vai junto com o agendamento e a equipe marca o que já chegou.
+Administradores editam os serviços e as listas em `/configuracoes/servicos`.
 
-## Requisitos
+![Atendimento com a lista de documentos](docs/screenshots/atendimento.png)
 
-| Ferramenta | Versão |
+Se o atendido autorizou, o sistema manda um e-mail 24 horas antes com data, local
+e documentos, e um link para confirmar ou cancelar sem criar conta. A mesma
+mensagem pode ser enviada pelo WhatsApp com um clique. Um cancelamento pelo link
+libera o horário e fica registrado no histórico.
+
+Existem três perfis: administrador, membro da equipe e visualizador. O
+visualizador só consulta.
+
+![Painel no tema escuro](docs/screenshots/painel-escuro.png)
+
+## Como foi feito
+
+A base é o que a comunidade Laravel chama de TALL: Tailwind, Alpine, Laravel e
+Livewire.
+
+| Peça | O que faz aqui |
 | --- | --- |
-| PHP | 8.3+ (com `pdo_pgsql`, `pgsql`, `mbstring`, `intl`, `bcmath`, `gd`, `zip`) |
-| Composer | 2.x |
-| Node.js | 20+ |
-| PostgreSQL | 16+ |
+| Laravel 13 e PHP 8.3 | Rotas, regras de negócio, autorização, fila de e-mails |
+| Livewire 4 e Alpine.js | Formulários, busca e telas que respondem sem recarregar |
+| Blade e Tailwind CSS 4 | Telas e estilos, com tema claro e escuro |
+| FullCalendar 6 | A agenda |
+| PostgreSQL 18 | Todos os dados. Ele também impede horários sobrepostos, guarda o histórico sem permitir edição e registra quem alterou dados pessoais |
+| GitHub e GitHub Actions | Código, testes a cada push e a prévia publicada |
 
-Verificação rápida:
+As fontes Fraunces e Literata vêm empacotadas no build, sem chamada a serviço
+externo. A rolagem suave usa a biblioteca Lenis, e a troca entre páginas usa o
+`wire:navigate` do Livewire, que evita recarregar tudo.
+
+A interface é toda em português e o código em inglês. Os horários ficam no
+banco em UTC e aparecem no fuso de São Paulo.
+
+## Equipe
+
+Beatriz é a Product Owner e responde pela interface e pela experiência de uso.
+Conversa com o cliente para levantar o que o projeto precisa, confere com o grupo
+o que dá para fazer e desenha as telas. O restante do grupo desenvolve o
+back-end e o front-end e cuida do banco de dados.
+
+## Rodando na sua máquina
+
+Você precisa de PHP 8.3 ou mais novo (com as extensões `pdo_pgsql`, `mbstring`,
+`intl`, `bcmath`, `gd` e `zip`), Composer 2, Node 22 (o Vite 8 aceita a partir do
+20.19) e PostgreSQL. Usamos o 18; as versões anteriores não foram testadas.
+
+Crie o usuário e os bancos:
 
 ```sh
-php -v && composer -V && node -v && psql --version
-php -m | grep -E 'pdo_pgsql|mbstring|intl'
-```
-
-## Setup local
-
-### 1. Banco de dados
-
-```sh
-sudo systemctl start postgresql
-
 sudo -u postgres psql -c "CREATE ROLE agenda LOGIN PASSWORD 'agenda' CREATEDB;"
 sudo -u postgres createdb -O agenda agenda_contabil
 sudo -u postgres createdb -O agenda agenda_contabil_test
 ```
 
-`agenda_contabil_test` é usado pela suíte de testes (configurado em
-`phpunit.xml`) — os testes rodam contra PostgreSQL, não SQLite.
+O segundo banco é o dos testes, que rodam em PostgreSQL de verdade porque parte
+das regras (horários sobrepostos, histórico protegido) vive no banco.
 
-### 2. Aplicação
+Depois, na pasta do projeto:
 
 ```sh
-git clone <repo> && cd Agenda-Contabil
-
 composer install
 npm install
-
 cp .env.example .env
 php artisan key:generate
-
 php artisan migrate --seed
 npm run build
+composer dev
 ```
 
-Ajuste `DB_*` no `.env` se usar credenciais diferentes das acima.
+O `composer dev` sobe o servidor em `http://localhost:8000`, a fila de e-mails,
+o log e o Vite. Se o seu PostgreSQL usar outra senha, ajuste as variáveis `DB_*`
+do `.env`.
 
-### 3. Executar
+O `--seed` cria os serviços com as listas de documentos, três contas de teste e
+duas semanas de atendimentos fictícios em torno da data de hoje. Os e-mails
+vão para `storage/logs/laravel.log`.
 
-```sh
-composer dev     # servidor + fila + logs + Vite, tudo junto
-```
-
-ou, separadamente:
-
-```sh
-php artisan serve   # http://localhost:8000
-npm run dev
-```
-
-## Usuários de desenvolvimento
-
-Criados por `DevelopmentUserSeeder` (`php artisan db:seed`). O seeder é
-idempotente e **não roda em produção**.
-
-| E-mail | Senha | Papel |
+| E-mail | Senha | Perfil |
 | --- | --- | --- |
 | `admin@agenda.local` | `password` | Administrador |
 | `equipe@agenda.local` | `password` | Membro da equipe |
 | `visualizador@agenda.local` | `password` | Visualizador |
 
-Não há cadastro público: contas são criadas por administradores
-([ADR 0002](docs/decisions/0002-authentication-scope.md)). Em produção, crie o
-primeiro administrador via `php artisan tinker`:
+## Testes
+
+```sh
+php artisan test
+vendor/bin/pint --test
+npm run build
+```
+
+São 176 testes de comportamento: conflito de horários, permissões por perfil,
+lembretes, validações, regras do banco. O Pint confere a formatação. A CI
+(`.github/workflows/ci.yml`) roda os três comandos a cada push e pull request,
+com um PostgreSQL próprio.
+
+## Dados pessoais
+
+O sistema guarda nome, contato, CPF/CNPJ e anotações sobre a situação financeira
+de quem é atendido, então a proteção desses dados pesou nas decisões:
+
+- CPF/CNPJ e anotações ficam criptografados no banco. O CPF/CNPJ ainda pode ser
+  buscado pelo número completo, por um índice que não revela o valor;
+- o CPF/CNPJ é conferido pelos dígitos verificadores e não se repete entre
+  atendidos;
+- lembretes só saem para quem autorizou, e a data da autorização fica gravada;
+- a sessão expira em 60 minutos e termina ao fechar o navegador. Uma conta
+  desativada perde o acesso no clique seguinte;
+- em produção a aplicação conecta ao banco com um usuário que não apaga
+  atendimentos nem mexe no histórico (veja "Colocando no ar"), e cada alteração
+  em atendidos e usuários vai para uma trilha de auditoria.
+
+## Colocando no ar
+
+No `.env` do servidor, use `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL`
+com o endereço público e `SESSION_SECURE_COOKIE=true`, e sirva o sistema só por
+HTTPS. Em produção o sistema recusa senhas que aparecem em vazamentos conhecidos
+e não roda os seeders de demonstração.
+
+Não há cadastro público. Depois das migrations, crie o primeiro administrador no
+terminal (`php artisan tinker`):
 
 ```php
 App\Models\User::create([
-    'name' => 'Nome',
+    'name' => 'Nome da pessoa',
     'email' => 'email@exemplo.com',
-    'password' => 'troque-esta-senha-2026',
+    'password' => 'uma-senha-longa-e-unica',
     'role' => App\Domain\Users\Enums\UserRole::Admin,
 ]);
 ```
 
-## Testes e qualidade
+Para desligar uma conta, marque `active` como `false`. O histórico continua
+apontando para ela.
+
+Usuário do banco. Em produção a aplicação não deve conectar como dono do
+PostgreSQL. O script `database/sql/privileges.sql` cria dois papéis: `agenda_app`,
+que lê e grava dados mas não altera estrutura, histórico ou auditoria, e
+`agenda_reports`, que só enxerga a view `appointment_facts` (sem nome, contato,
+documento nem observações). Rode-o depois das migrations, como superusuário:
 
 ```sh
-php artisan test          # PHPUnit
-vendor/bin/pint           # formata (Laravel preset)
-vendor/bin/pint --test    # apenas verifica — é o que a CI roda
-npm run build             # build de produção do frontend
+psql -d agenda_contabil -v owner=<dono do banco> \
+     -v app_password='...' -v reports_password='...' \
+     -f database/sql/privileges.sql
 ```
 
-A CI (`.github/workflows/ci.yml`) sobe um PostgreSQL, instala dependências,
-compila o frontend, checa formatação, roda migrations e a suíte de testes a
-cada push em `main`/`develop` e a cada pull request.
+Depois, o `.env` passa a usar `DB_USERNAME=agenda_app`, e as migrations dos
+próximos deploys rodam com o dono: `DB_USERNAME=<dono> php artisan migrate --force`.
 
-## Arquitetura resumida
+Lembretes por e-mail precisam de três coisas no servidor: o agendador do Laravel
+no cron, um worker de fila e um servidor SMTP nas variáveis `MAIL_*`.
 
 ```
-HTTP / Livewire  →  Actions de domínio  →  Models  →  PostgreSQL
-                          ↑
-                  Policies / Enums / Queries
+* * * * * cd /caminho/do/projeto && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-- `app/Domain/` — regras de negócio: Actions, Enums e Queries de
-  `Appointments`, `Clients` e `Users`.
-- `app/Models/` — models Eloquent; `app/Policies/` — quem pode o quê.
-- `app/Http/` — controllers finos, form requests, resources e middlewares de
-  segurança.
-- `app/Livewire/` — formulários e telas interativas.
-- `app/Support/` — `DisplayTimezone` (UTC ↔ São Paulo) e `BlindIndex`.
-- `resources/js/` — tema, navegação, agenda (carregada só na página dela),
-  cortinas de entrada/saída e modo prévia.
-- `docs/` — arquitetura, banco, ADRs e tecnologias utilizadas.
+```sh
+php artisan queue:work
+```
 
-**Idioma:** interface em pt-BR, código em inglês. **Fuso:** persistência em
-UTC, exibição em `America/Sao_Paulo`
-([ADR 0001](docs/decisions/0001-timezone-strategy.md)).
-
-## Segurança e proteção de dados
-
-- CPF/CNPJ e observações livres criptografados no banco; o documento continua
-  localizável pela busca exata através de um índice HMAC.
-- Cabeçalhos de segurança em todas as respostas (CSP com nonce, anti-iframe,
-  `nosniff`, HSTS em HTTPS) e páginas logadas sem cache no navegador.
-- Sessão criptografada, com 60 minutos e encerrada ao fechar o navegador;
-  contas desativadas perdem a sessão no próximo clique.
-- Senhas com no mínimo 10 caracteres, letras e números; em produção, senhas
-  que aparecem em vazamentos conhecidos são recusadas.
-- Limite de tentativas no login e nas rotas da agenda; a recuperação de senha
-  responde igual para e-mails com e sem conta.
-- CPF/CNPJ validado pelos dígitos verificadores e único entre os atendidos.
-- No banco: histórico e auditoria só de inclusão, atendimentos nunca apagados
-  fisicamente e registro de quem alterou dados de atendidos e usuários
-  (triggers), além de papéis com privilégio mínimo.
-
-Detalhes em [ADR 0007](docs/decisions/0007-security-and-data-protection.md)
-e [ADR 0009](docs/decisions/0009-database-security.md).
-
-**Banco em produção:** depois das migrations, aplique os papéis com
-`psql -d agenda_contabil -v owner=<dono> -v app_password='…' -v reports_password='…' -f database/sql/privileges.sql`.
-A aplicação passa a conectar como `agenda_app`; as migrations continuam
-rodando com o dono (`DB_USERNAME=<dono> php artisan migrate --force`).
-Em produção, defina `APP_ENV=production`, `APP_DEBUG=false` e
-`SESSION_SECURE_COOKIE=true`, e sirva a aplicação apenas por HTTPS.
-
-## Lembretes em produção
-
-Os lembretes dependem de três coisas no servidor:
-
-- `APP_URL` com o endereço público: os links do e-mail são assinados com ele e
-  deixam de valer se o endereço mudar;
-- o agendador do Laravel no cron (`* * * * * php artisan schedule:run`), que
-  roda `appointments:send-reminders` a cada 15 minutos;
-- um worker de fila (`php artisan queue:work`), que envia os e-mails, e as
-  variáveis `MAIL_*` de um servidor SMTP.
-
-Em desenvolvimento os e-mails vão para `storage/logs/laravel.log`
-(`MAIL_MAILER=log`) e `composer dev` já inicia a fila.
+O agendador dispara `appointments:send-reminders` a cada 15 minutos. Os links do
+e-mail são assinados com o `APP_URL`, então deixam de valer se o endereço mudar.
 
 ## Prévia no GitHub Pages
 
-O GitHub Pages hospeda apenas arquivos estáticos, então a prévia é gerada pela
-própria aplicação: `php artisan preview:export` renderiza as páginas reais
-(mesmas rotas, views e assets) com os dados de demonstração e grava HTML
-estático em `build/preview/`. Navegação, agenda, detalhes, tema e animações
-funcionam; ações que gravam dados ficam desativadas e um aviso informa isso.
-O comando se recusa a rodar em produção, para que dados reais nunca sejam
-publicados.
+O GitHub Pages só serve arquivos estáticos e não roda o sistema. Por isso a prévia
+é gerada pelo próprio projeto: `php artisan preview:export <endereço>` renderiza
+as páginas reais, com os dados de demonstração, e grava HTML em `build/preview/`.
+Navegação, agenda, busca de atendidos, tema e animações funcionam. O que gravaria
+dados fica bloqueado e um aviso explica. O comando não roda em produção e
+também para se encontrar atendidos com e-mail que não seja de exemplo, para
+que dado real nunca vá parar numa página pública.
 
-**Publicar:** em *Settings → Pages → Build and deployment*, escolha a fonte
-**GitHub Actions**. A cada push em `main`, o workflow
-[`preview.yml`](.github/workflows/preview.yml) gera e publica a prévia em
-`https://<usuário>.github.io/<repositório>/`. Na prévia, o formulário de
-login já vem preenchido com a conta de demonstração.
+Para publicar, escolha GitHub Actions em *Settings → Pages → Build and
+deployment*. Depois disso, cada push na `main` dispara o workflow
+`.github/workflows/preview.yml`, que monta o banco de demonstração e publica em
+`https://<usuário>.github.io/<repositório>/`.
 
-**Gerar localmente:**
+Para ver a prévia na sua máquina:
 
 ```sh
 php artisan migrate:fresh --seed
-npm run build
+ASSET_URL=http://127.0.0.1:8090 npm run build
 php artisan preview:export http://127.0.0.1:8090
 python3 -m http.server 8090 -d build/preview
 ```
 
-## Documentação
+## Para onde olhar no código
 
-- [`PRD.md`](PRD.md) — requisitos, regras de domínio e milestones
-- [`docs/architecture.md`](docs/architecture.md) — estrutura do código
-- [`docs/database.md`](docs/database.md) — esquema atual e planejado
-- [`docs/decisions/`](docs/decisions/) — ADRs
-- [`docs/tecnologias-e-referencias.md`](docs/tecnologias-e-referencias.md) —
-  bibliotecas, técnicas e referências utilizadas
-- [`CONTRIBUTING.md`](CONTRIBUTING.md) — branches, commits, Definition of Done
+```
+app/Domain/     regras de negócio: agendar, reagendar, status, lembretes, catálogo
+app/Livewire/   formulários e telas interativas
+app/Http/       controllers, requests, middlewares de segurança
+app/Models/     models e relacionamentos
+app/Policies/   quem pode fazer o quê
+resources/js/   agenda, tema, navegação, animações
+database/       migrations, seeders e o script de papéis do PostgreSQL
+```
+
+O [`PRD.md`](PRD.md) tem os requisitos, as regras de domínio e os marcos do projeto.
+
+## Fontes consultadas
+
+Estilo de código e regras de domínio:
+
+- [laravel.io](https://github.com/laravelio/laravel.io): classes de ação com um
+  único método, classes de consulta e enums com `match`
+- [Easy!Appointments](https://github.com/alextselegidis/easyappointments): regra de
+  sobreposição de horários
+- [Monica CRM](https://laraveldaily.com/code-examples/example/monicahq-monica/notifications):
+  lembretes agendados
+- [PostgreSQL: restrições em intervalos](https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-CONSTRAINT),
+  [funções de trigger](https://www.postgresql.org/docs/current/plpgsql-trigger.html)
+  e [GRANT](https://www.postgresql.org/docs/current/sql-grant.html)
+- [Paragon Initiative: busca em dados criptografados](https://paragonie.com/blog/2017/05/building-searchable-encrypted-databases-with-php-and-sql)
+
+Interface:
+
+- [FullCalendar: `timeZone`](https://fullcalendar.io/docs/timeZone) e
+  [`eventContent`](https://fullcalendar.io/docs/event-render-hooks)
+- [Akash Hamirwasia: troca de tema com View Transitions](https://akashhamirwasia.com/blog/full-page-theme-toggle-animation-with-view-transitions-api/)
+- [WCAG 2.1: contraste mínimo](https://www.w3.org/TR/WCAG21/#contrast-minimum), usado
+  para conferir as cores nos dois temas
+
+Documentação oficial de Laravel, Livewire, Tailwind, Vite e Lenis, e a
+[LGPD](https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm) para
+as decisões sobre dados pessoais.

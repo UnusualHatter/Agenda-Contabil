@@ -76,8 +76,11 @@ export function mountAgenda(element, navigate) {
         responsible: document.querySelector('[data-agenda-filter="responsible"]'),
         cancelled: document.querySelector('[data-agenda-filter="cancelled"]'),
     };
-    const { eventsUrl, createUrl, rescheduleUrl, textSaving, textSaved, textFailed } = element.dataset;
+    const { eventsUrl, createUrl, rescheduleUrl, textSaving, textSaved, textFailed, timezone } = element.dataset;
     const canCreate = createUrl !== '';
+
+    // "Now" as São Paulo wall time, in the same UTC-labelled form as the events.
+    const now = () => new Date(`${new Date().toLocaleString('sv-SE', { timeZone: timezone }).replace(' ', 'T')}Z`);
 
     const announce = (text, tone) => {
         message.textContent = text;
@@ -130,6 +133,7 @@ export function mountAgenda(element, navigate) {
         plugins: [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin],
         locale: ptBrLocale,
         timeZone: 'UTC',
+        now,
         firstDay: 1,
         initialView: currentLayout().view,
         headerToolbar: currentLayout().header,
