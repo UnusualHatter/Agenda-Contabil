@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 #[Fillable([
     'type', 'name', 'trade_name', 'document', 'phone', 'email',
@@ -22,13 +24,17 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Client extends Model
 {
     /** @use HasFactory<ClientFactory> */
-    use HasFactory, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected static function booted(): void
     {
         static::saving(function (Client $client): void {
             if ($client->isDirty('document')) {
                 $client->document_index = BlindIndex::forDocument($client->document);
+            }
+
+            if ($client->isDirty('accepts_reminders')) {
+                $client->reminders_consented_at = $client->accepts_reminders ? now() : null;
             }
         });
     }
@@ -40,6 +46,7 @@ class Client extends Model
             'document' => 'encrypted',
             'notes' => 'encrypted',
             'accepts_reminders' => 'boolean',
+            'reminders_consented_at' => 'datetime',
             'active' => 'boolean',
         ];
     }
@@ -69,6 +76,21 @@ class Client extends Model
     public function recentAppointments(): HasMany
     {
         return $this->appointments()->where('starts_at', '<', now())->latest('starts_at')->limit(3);
+    }
+
+    public function greetingName(): string
+    {
+        return $this->isOrganization() ? ($this->trade_name ?: $this->name) : Str::before($this->name, ' ');
+    }
+
+    public function canReceiveReminders(): bool
+    {
+        return $this->active && $this->accepts_reminders && filled($this->email);
+    }
+
+    public function routeNotificationForMail(): ?string
+    {
+        return $this->email;
     }
 
     public function isOrganization(): bool

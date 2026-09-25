@@ -62,12 +62,22 @@ contexto e consequências estão nos ADRs em [`decisions/`](decisions/).
 **Documentação**
 
 - PostgreSQL — [Range Types: constraints on ranges](https://www.postgresql.org/docs/current/rangetypes.html#RANGETYPES-CONSTRAINT)
-  (restrição de exclusão para reservas).
+  (restrição de exclusão para reservas),
+  [Trigger functions em PL/pgSQL](https://www.postgresql.org/docs/current/plpgsql-trigger.html),
+  [GRANT](https://www.postgresql.org/docs/current/sql-grant.html),
+  [ALTER DEFAULT PRIVILEGES](https://www.postgresql.org/docs/current/sql-alterdefaultprivileges.html),
+  [Índices parciais](https://www.postgresql.org/docs/current/indexes-partial.html).
+- CPF e CNPJ — cálculo dos dígitos verificadores (módulo 11) conforme as
+  regras da Receita Federal.
 - Laravel — [Encryption](https://laravel.com/docs/encryption),
   [Vite: CSP nonce](https://laravel.com/docs/vite#content-security-policy-csp-nonce),
   [Rate limiting](https://laravel.com/docs/rate-limiting),
   [Pessimistic locking](https://laravel.com/docs/queries#pessimistic-locking),
-  [Password validation](https://laravel.com/docs/validation#validating-passwords).
+  [Password validation](https://laravel.com/docs/validation#validating-passwords),
+  [Notifications](https://laravel.com/docs/notifications),
+  [Signed URLs](https://laravel.com/docs/urls#signed-urls),
+  [Task scheduling](https://laravel.com/docs/scheduling).
+- WhatsApp — [Click to chat (`wa.me`)](https://faq.whatsapp.com/5913398998672934).
 - Livewire — [Navigate](https://livewire.laravel.com/docs/navigate),
   [Form objects](https://livewire.laravel.com/docs/forms),
   [Bundling Livewire and Alpine](https://livewire.laravel.com/docs/installation#manually-bundling-livewire-and-alpine).

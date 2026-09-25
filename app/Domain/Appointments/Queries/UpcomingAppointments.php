@@ -12,8 +12,7 @@ use Illuminate\Database\Eloquent\Collection;
 final class UpcomingAppointments
 {
     /**
-     * "Today" is the local day in São Paulo, not the UTC one: at 22:00 local
-     * it is already tomorrow in UTC.
+     * The local day, not the UTC one: at 22:00 in São Paulo it is already tomorrow in UTC.
      *
      * @return Collection<int, Appointment>
      */

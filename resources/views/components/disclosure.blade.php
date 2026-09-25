@@ -1,10 +1,5 @@
 @props(['id', 'label'])
 
-{{--
-    Summary row that expands in place. The summary is a real button (keyboard
-    and screen readers get aria-expanded), and the closed panel is inert so
-    its links are skipped by Tab until it opens.
---}}
 <div x-data="{ open: false }" x-on:keydown.escape="open = false"
      {{ $attributes->merge(['class' => 'rounded-soft transition-colors duration-200']) }}
      x-bind:class="open && 'bg-sunken/70'">

@@ -19,11 +19,6 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
 use RuntimeException;
 
-/**
- * Renders the real pages, with the demo data, into static HTML for a
- * read-only preview (GitHub Pages). Nothing is duplicated: the same routes,
- * views and assets produce every file.
- */
 final class ExportPreview extends Command
 {
     protected $signature = 'preview:export
@@ -45,14 +40,24 @@ final class ExportPreview extends Command
         $output = base_path((string) $this->option('output'));
         $admin = User::query()->where('email', 'admin@agenda.local')->first();
 
+        $realContacts = Client::query()
+            ->whereNotNull('email')
+            ->whereRaw('email !~* ?', ['@([a-z0-9-]+\\.)*example\\.(com|org|net)$'])
+            ->exists();
+
+        if ($realContacts) {
+            $this->components->error('Found clients with real e-mail addresses. The preview is built from the demo seed only.');
+
+            return self::FAILURE;
+        }
+
         if ($admin === null || Appointment::query()->doesntExist()) {
             $this->components->error('Seed the demo data first: php artisan migrate:fresh --seed');
 
             return self::FAILURE;
         }
 
-        // Internal requests are plain HTTP; links must carry the scheme of the
-        // published address, or an HTTPS page would point at HTTP ones.
+        // The internal requests are plain HTTP; links must use the published scheme.
         URL::forceRootUrl($base);
         URL::forceScheme((string) parse_url($base, PHP_URL_SCHEME));
         URL::useAssetOrigin($base);
@@ -70,9 +75,6 @@ final class ExportPreview extends Command
         foreach ($this->privatePages() as $path) {
             $this->write($files, $output, $path, $this->render($kernel, $path, $admin, $base));
         }
-
-        // Without a server there is no session to carry the sign-in and
-        // sign-out curtains, so the preview gets pages that already have them.
 
         $this->write($files, $output, '/boas-vindas', $this->withCurtain(
             $dashboard,
@@ -109,6 +111,7 @@ final class ExportPreview extends Command
             '/atendidos/novo',
             '/atendimentos/novo',
             '/perfil',
+            '/configuracoes/servicos',
             ...$clients->map(fn (int $id): string => "/atendidos/{$id}"),
             ...$clients->map(fn (int $id): string => "/atendidos/{$id}/editar"),
             ...Appointment::query()->pluck('id')->map(fn (int $id): string => "/atendimentos/{$id}"),
@@ -139,10 +142,14 @@ final class ExportPreview extends Command
             1,
         );
 
-        // Static files cannot answer date-range queries or accept changes:
-        // the agenda reads one prepared feed and slot selection is off.
         $html = preg_replace('/data-events-url="[^"]*"/', 'data-events-url="'.e($base).'/agenda/eventos.json"', $html);
         $html = preg_replace('/data-create-url="[^"]*"/', 'data-create-url=""', $html);
+
+        $html = preg_replace_callback(
+            '/<(input|select)\b[^>]*data-client-(search|type)[^>]*>/',
+            fn (array $tag): string => preg_replace('/\swire:model[\w.-]*="[^"]*"/', '', $tag[0]),
+            $html,
+        );
 
         return str_replace('</body>', view('preview.banner')->render().'</body>', $html);
     }

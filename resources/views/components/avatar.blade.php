@@ -1,7 +1,6 @@
 @props(['user'])
 
 @php
-    // Stable colour per person, so the same colleague is always the same tone.
     $tone = match ($user->id % 6) {
         0 => 'bg-primary-soft text-primary',
         1 => 'bg-clay-soft text-clay',

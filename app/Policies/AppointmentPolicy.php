@@ -34,8 +34,7 @@ class AppointmentPolicy
         return $user->canWrite();
     }
 
-    // Soft delete is an administrative correction, never part of the daily
-    // flow; cancelling is what the team uses. There is no forceDelete.
+    // The team cancels; deleting is an administrative correction.
     public function delete(User $user, Appointment $appointment): bool
     {
         return $user->active && $user->isAdmin();

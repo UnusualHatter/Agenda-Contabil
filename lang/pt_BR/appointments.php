@@ -37,6 +37,7 @@ return [
 
     'errors' => [
         'invalid_period' => 'O horário final precisa ser depois do horário inicial.',
+        'too_long' => 'Um atendimento pode durar no máximo :hours horas.',
         'conflict' => ':name já tem atendimento das :start às :end. Escolha outro horário ou outro responsável.',
         'inactive_service' => 'Este serviço foi desativado e não pode ser usado em novos atendimentos.',
         'details_required' => 'Descreva a demanda para o serviço ":service".',
@@ -89,6 +90,7 @@ return [
         'confirm_no_show' => 'Marcar que o atendido não compareceu?',
         'client_page' => 'Ver ficha do atendido',
         'by' => 'por :name',
+        'by_client' => 'pelo atendido, no link do lembrete',
     ],
 
     'row' => [

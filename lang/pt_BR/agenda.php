@@ -16,4 +16,5 @@ return [
     'failed' => 'Não foi possível mudar o horário.',
     'legend' => 'Legenda',
     'empty' => 'Nenhum atendimento neste período.',
+    'range_too_long' => 'Peça no máximo 45 dias por vez.',
 ];

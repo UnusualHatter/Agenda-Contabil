@@ -9,11 +9,7 @@ use App\Models\ServiceCategory;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-/**
- * Categories, services and document checklists offered by the project.
- * Keyed by slug so it can run on every deploy without duplicating rows or
- * undoing an admin's later edits to names, order or activation.
- */
+// Keyed by slug and create-only, so re-running it keeps an admin's later edits.
 class ServiceCatalogSeeder extends Seeder
 {
     private const IRPF_DOCUMENTS = [

@@ -1,7 +1,6 @@
 import { EASE_OUT, EASE_SPRING, prefersReducedMotion } from './motion';
 
-// Between pages the menu is rebuilt, so the indicator's last position is kept
-// here and the new indicator starts from it, sliding to the new active tab.
+// The menu is rebuilt on every page, so the indicator slides from the last position kept here.
 let lastPosition = null;
 
 function slideIndicator() {

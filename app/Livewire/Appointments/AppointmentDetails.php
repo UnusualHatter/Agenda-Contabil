@@ -7,7 +7,9 @@ namespace App\Livewire\Appointments;
 use App\Domain\Appointments\Actions\ChangeAppointmentStatus;
 use App\Domain\Appointments\Actions\MarkDocumentReceived;
 use App\Domain\Appointments\Actions\RescheduleAppointment;
+use App\Domain\Appointments\Actions\SendAppointmentReminder;
 use App\Domain\Appointments\Enums\AppointmentStatus;
+use App\Domain\Appointments\ReminderMessage;
 use App\Models\Appointment;
 use App\Models\User;
 use App\Support\DisplayTimezone;
@@ -58,10 +60,6 @@ class AppointmentDetails extends Component
         $this->message = __('appointments.flash.status_changed', ['status' => $next->label()]);
     }
 
-    /**
-     * Receives the state the person sees, not a "toggle": fast repeated
-     * clicks then always end with screen and database agreeing.
-     */
     public function markDocument(int $documentId, bool $received, MarkDocumentReceived $mark): void
     {
         $this->authorize('update', $this->appointment);
@@ -82,7 +80,7 @@ class AppointmentDetails extends Component
         $this->authorize('update', $this->appointment);
 
         $this->validate([
-            'date' => ['required', 'date_format:Y-m-d'],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:-1 year', 'before_or_equal:+2 years'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i'],
             'responsible_user_id' => ['required', 'integer', 'exists:users,id'],
@@ -100,6 +98,15 @@ class AppointmentDetails extends Component
         $this->message = __('appointments.flash.rescheduled');
     }
 
+    public function sendReminder(SendAppointmentReminder $send): void
+    {
+        $this->authorize('update', $this->appointment);
+
+        $this->message = $send->handle($this->appointment, again: true)
+            ? __('reminders.card.sent', ['email' => $this->appointment->client->email])
+            : __('reminders.card.not_sent');
+    }
+
     public function render(): View
     {
         $this->appointment->load(['client', 'service.category', 'responsible', 'documents', 'activities.user']);
@@ -108,6 +115,7 @@ class AppointmentDetails extends Component
             'start' => DisplayTimezone::toLocal($this->appointment->starts_at),
             'end' => DisplayTimezone::toLocal($this->appointment->ends_at),
             'usersById' => User::query()->whereIn('id', $this->mentionedUserIds())->pluck('name', 'id'),
+            'whatsAppUrl' => $this->appointment->client->accepts_reminders ? ReminderMessage::whatsAppUrl($this->appointment) : null,
         ]);
     }
 
@@ -121,11 +129,6 @@ class AppointmentDetails extends Component
         $this->responsible_user_id = $this->appointment->responsible_user_id;
     }
 
-    /**
-     * Responsible changes store ids; the history shows names.
-     *
-     * @return list<int>
-     */
     private function mentionedUserIds(): array
     {
         return $this->appointment->activities

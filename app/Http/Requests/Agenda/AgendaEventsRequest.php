@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Requests\Agenda;
 
 use App\Support\DisplayTimezone;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\Validator;
 
-/**
- * FullCalendar runs with timeZone "UTC" and receives São Paulo wall times,
- * so the "Z" it sends back is not a real UTC offset: the date and time are
- * local and are converted to UTC here.
- */
+// The calendar runs in "UTC" over São Paulo wall times, so the "Z" it sends
+// is not a real offset: the values are local time.
 class AgendaEventsRequest extends FormRequest
 {
+    // Longest view is a month plus the days of the weeks around it.
+    private const MAX_RANGE_DAYS = 45;
+
     public function rules(): array
     {
         return [
@@ -23,6 +25,22 @@ class AgendaEventsRequest extends FormRequest
             'responsible' => ['nullable', 'integer', 'exists:users,id'],
             'cancelled' => ['nullable', 'boolean'],
         ];
+    }
+
+    /**
+     * @return list<Closure(Validator): void>
+     */
+    public function after(): array
+    {
+        return [function (Validator $validator): void {
+            if ($validator->errors()->isNotEmpty()) {
+                return;
+            }
+
+            if ($this->from()->diffInDays($this->to()) > self::MAX_RANGE_DAYS) {
+                $validator->errors()->add('end', __('agenda.range_too_long'));
+            }
+        }];
     }
 
     public function from(): Carbon

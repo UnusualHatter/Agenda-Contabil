@@ -1,15 +1,12 @@
-// Livewire 4 ships its own Alpine; importing alpinejs separately would start
-// two copies on pages that contain Livewire components.
+// Livewire 4 bundles Alpine; a second copy would break x-data.
 import { Alpine, Livewire } from '../../vendor/livewire/livewire/dist/livewire.esm';
 import { startCurtains } from './curtain';
 import { trackNavigation } from './navigation';
 import { startSmoothScroll } from './scroll';
-import themeToggle from './theme';
+import themeToggle, { keepThemeAcrossPages } from './theme';
 
 Alpine.data('themeToggle', themeToggle);
 
-// The calendar bundle is only downloaded on the agenda page, and taken down
-// before Livewire swaps the page for another one.
 let unmountAgenda = null;
 
 document.addEventListener('livewire:navigating', () => {
@@ -28,6 +25,7 @@ document.addEventListener('livewire:navigated', async () => {
     unmountAgenda = mountAgenda(element, (url) => Livewire.navigate(url));
 });
 
+keepThemeAcrossPages();
 trackNavigation();
 startCurtains();
 startSmoothScroll();

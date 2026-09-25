@@ -2,7 +2,6 @@
     <x-card class="space-y-4">
         <h2 class="text-2xl">{{ __('appointments.create.step_client') }}</h2>
 
-        {{-- Three exclusive states: a client is chosen, one is being registered, or we are searching. --}}
         @include(match (true) {
             $this->client !== null => 'livewire.appointments.client-step.selected',
             $creating_client => 'livewire.appointments.client-step.new-client',

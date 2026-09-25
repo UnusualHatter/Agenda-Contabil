@@ -1,5 +1,3 @@
-// Alpine component behind <x-theme-toggle>. The first paint is handled by
-// layouts/partials/theme.blade.php; this only reacts to the user's choice.
 import { prefersReducedMotion } from './motion';
 
 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
@@ -14,9 +12,6 @@ const paint = (theme) => {
     document.documentElement.dataset.theme = theme;
 };
 
-// Swaps without any transition, for browsers without view transitions or
-// people who prefer reduced motion. The class is kept for two frames so the
-// new colours are painted before hover transitions come back.
 function swap(theme) {
     const root = document.documentElement;
 
@@ -25,8 +20,6 @@ function swap(theme) {
     requestAnimationFrame(() => requestAnimationFrame(() => root.classList.remove('theme-transition')));
 }
 
-// Circular reveal from the pressed button: one view transition, with a
-// growing clip-path on the new snapshot.
 function reveal(theme, origin) {
     const root = document.documentElement;
     const { left, top, width, height } = origin.getBoundingClientRect();
@@ -38,8 +31,7 @@ function reveal(theme, origin) {
 
     const transition = document.startViewTransition(() => paint(theme));
 
-    // `ready` rejects when the browser skips the transition (a hidden tab,
-    // for instance); the new theme is already painted by then.
+    // `ready` rejects when the browser skips the transition; the theme is already applied.
     transition.ready.then(
         () => root.animate(
             { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${radius}px at ${x}px ${y}px)`] },
@@ -64,6 +56,13 @@ function apply(choice, origin = null) {
     }
 
     reveal(theme, origin);
+}
+
+// Livewire copies <html> attributes from the new page, which has no data-theme.
+export function keepThemeAcrossPages() {
+    document.addEventListener('livewire:navigating', (event) => {
+        event.detail.onSwap(() => paint(resolve(localStorage.getItem('theme') ?? 'system')));
+    });
 }
 
 export default () => ({

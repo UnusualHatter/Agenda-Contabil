@@ -28,29 +28,35 @@ nada de pastas vazias só para bater com o desenho.
 
 ```
 app/
-├── Console/Commands/   # ExportPreview (prévia estática para o GitHub Pages)
+├── Console/Commands/   # ExportPreview (prévia estática), SendDueReminders
 ├── Domain/
 │   ├── Appointments/
 │   │   ├── Actions/    # ScheduleAppointment, RescheduleAppointment (horário e/ou
 │   │   │               # responsável), ChangeAppointmentStatus,
-│   │   │               # MarkDocumentReceived, EnsureResponsibleIsAvailable
+│   │   │               # MarkDocumentReceived, EnsureResponsibleIsAvailable,
+│   │   │               # SendAppointmentReminder
 │   │   ├── Enums/      # AppointmentStatus, ActivityType, LocationType
-│   │   └── Queries/    # AgendaAppointments, UpcomingAppointments
+│   │   ├── Queries/    # AgendaAppointments, UpcomingAppointments
+│   │   └── ReminderMessage.php  # texto do lembrete (e-mail e WhatsApp)
 │   ├── Clients/
 │   │   ├── Enums/      # ClientType
 │   │   └── Queries/    # ClientHistory, SearchClients
+│   ├── Services/Actions/  # SaveService (serviço + checklist)
 │   └── Users/Enums/    # UserRole
 ├── Http/
-│   ├── Controllers/    # Agenda, Appointment, Client, Dashboard (finos: só views/JSON)
-│   ├── Middleware/     # SecurityHeaders, EnsureUserIsActive
+│   ├── Controllers/    # Agenda, Appointment, Client, Dashboard, ReminderResponse
+│   ├── Middleware/     # SecurityHeaders, EnsureUserIsActive, SetDatabaseActor
 │   ├── Requests/Agenda # conversão de horário local → UTC na borda
 │   └── Resources/      # AgendaEventResource (formato do FullCalendar)
 ├── Livewire/
 │   ├── Appointments/   # CreateAppointment, AppointmentDetails
 │   ├── Clients/        # ClientIndex, ClientEditor
+│   ├── Services/       # ServiceCatalog
 │   └── Forms/          # ClientForm (compartilhado pelas duas telas de cadastro)
 ├── Models/             # todos os models Eloquent
+├── Notifications/      # AppointmentReminder
 ├── Policies/           # Appointment, Client, Service
+├── Rules/              # BrazilianDocument (CPF/CNPJ)
 ├── Providers/
 └── Support/            # DisplayTimezone, BlindIndex
 ```
@@ -124,8 +130,6 @@ o workflow `.github/workflows/preview.yml` publica o resultado.
 
 | Área | Milestone |
 | --- | --- |
-| Administração do catálogo de serviços e checklists pela interface | 2 (restante) |
-| Lembretes por e-mail e WhatsApp (`wa.me`) | 4 |
 | Painel de impacto e relatórios | 5 |
 | API `/api/v1` com Sanctum | 6 |
 | Google Calendar / ICS / Mundy / WhatsApp automático | 7 |

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
+use App\Models\Client;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,6 +38,10 @@ class ExportPreviewTest extends TestCase
         $this->assertStringContainsString('data-preview', $dashboard);
         $this->assertFileExists(base_path("{$this->output}/index.html"));
         $this->assertStringContainsString('"editable":false', $feed);
+
+        $clients = file_get_contents(base_path("{$this->output}/atendidos/index.html"));
+        $this->assertMatchesRegularExpression('/<input[^>]*data-client-search/', $clients);
+        $this->assertDoesNotMatchRegularExpression('/<input[^>]*data-client-search[^>]*wire:model/', $clients);
     }
 
     public function test_the_sign_in_and_sign_out_curtains_exist_without_a_server(): void
@@ -53,6 +58,17 @@ class ExportPreviewTest extends TestCase
         $this->assertStringContainsString('Olá, Administrador', $welcome);
         $this->assertStringContainsString('Sessão encerrada', $signedOut);
         $this->assertStringContainsString('curtain--quick', $signedOut);
+    }
+
+    public function test_it_refuses_to_publish_real_contacts(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+        Client::factory()->create(['email' => 'maria.souza@gmail.com']);
+
+        $this->artisan('preview:export', ['url' => 'https://example.github.io/Agenda', '--output' => $this->output])
+            ->assertFailed();
+
+        $this->assertDirectoryDoesNotExist(base_path($this->output));
     }
 
     public function test_it_refuses_to_publish_from_a_production_database(): void

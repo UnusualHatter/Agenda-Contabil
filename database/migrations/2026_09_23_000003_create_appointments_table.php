@@ -34,10 +34,7 @@ return new class extends Migration
 
         DB::statement('ALTER TABLE appointments ADD CONSTRAINT appointments_period_check CHECK (ends_at > starts_at)');
 
-        // Backstop for the overlap rule: two concurrent requests could both pass the
-        // application check, so the database refuses the second overlap. The
-        // status list mirrors AppointmentStatus::blocking() at the time of
-        // writing; a new blocking status needs a new migration.
+        // Mirrors AppointmentStatus::blocking(); a new blocking status needs a new migration.
         DB::statement('CREATE EXTENSION IF NOT EXISTS btree_gist');
         DB::statement(<<<'SQL'
             ALTER TABLE appointments ADD CONSTRAINT appointments_no_overlap

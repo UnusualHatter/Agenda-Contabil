@@ -1,0 +1,51 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Notifications;
+
+use App\Domain\Appointments\ReminderMessage;
+use App\Models\Appointment;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
+
+final class AppointmentReminder extends Notification implements ShouldQueue
+{
+    use Queueable;
+
+    public function __construct(public Appointment $appointment) {}
+
+    /**
+     * @return list<string>
+     */
+    public function via(object $notifiable): array
+    {
+        return ['mail'];
+    }
+
+    public function toMail(object $notifiable): MailMessage
+    {
+        $lines = array_map(self::plain(...), ReminderMessage::lines($this->appointment));
+        $message = (new MailMessage)
+            ->subject(ReminderMessage::subject($this->appointment))
+            ->greeting(array_shift($lines));
+
+        foreach ($lines as $line) {
+            $message->line($line);
+        }
+
+        return $message
+            ->action(__('reminders.respond_action'), ReminderMessage::responseUrl($this->appointment))
+            ->line(__('reminders.respond_note'))
+            ->salutation(__('reminders.salutation'));
+    }
+
+    // Mail lines are rendered as Markdown: a name or place typed as
+    // "[text](url)" would otherwise become a link in the project's e-mail.
+    private static function plain(string $line): string
+    {
+        return addcslashes($line, '\\`*_[]()#<>|~!');
+    }
+}

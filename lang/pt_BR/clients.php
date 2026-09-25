@@ -24,6 +24,10 @@ return [
 
     'errors' => [
         'contact_required' => 'Informe um telefone ou um e-mail para contato.',
+        'invalid_individual_document' => 'CPF inválido. Confira os 11 dígitos.',
+        'invalid_organization_document' => 'CNPJ inválido. Confira os 14 dígitos.',
+        'document_taken' => 'Já existe um atendido com este CPF/CNPJ. Busque pelo número completo na lista de atendidos.',
+        'invalid_phone' => 'Telefone inválido. Informe o DDD e o número.',
     ],
 
     'flash' => [

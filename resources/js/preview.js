@@ -1,7 +1,5 @@
 import { prefersReducedMotion } from './motion';
 
-// Behaviour of the static preview published on GitHub Pages: there is no
-// server, so anything that would save is stopped and explained instead.
 function notice() {
     const banner = document.querySelector('[data-preview-banner]');
 
@@ -11,8 +9,6 @@ function notice() {
     );
 }
 
-// Visitors of the preview have no account: the login form comes filled with
-// the demo one, which only exists in the seeded preview data.
 function fillDemoLogin() {
     const form = document.querySelector('[data-login-form]');
 
@@ -24,6 +20,26 @@ function fillDemoLogin() {
     form.querySelector('#password').value = 'demonstracao';
 }
 
+const normalize = (text) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+function filterClients() {
+    const term = normalize(document.querySelector('[data-client-search]').value.trim());
+    const digits = term.replace(/\D/g, '');
+    const type = document.querySelector('[data-client-type]').value;
+
+    document.querySelectorAll('[data-client-row]').forEach((row) => {
+        const text = normalize(row.querySelector('[aria-controls]').textContent);
+        const matchesTerm = term === '' || text.includes(term) || (digits !== '' && text.replace(/\D/g, '').includes(digits));
+        const matchesType = type === '' || row.dataset.clientRow === type;
+
+        row.hidden = ! (matchesTerm && matchesType);
+    });
+}
+
+function prefetch(url) {
+    document.head.append(Object.assign(document.createElement('link'), { rel: 'prefetch', href: url }));
+}
+
 export function enablePreview(Livewire) {
     const base = document.documentElement.dataset.previewBase;
     const pages = {
@@ -31,8 +47,6 @@ export function enablePreview(Livewire) {
         signedOut: `${base}/sessao-encerrada`,
     };
 
-    // The curtain pages are the dashboard and the login with the animation
-    // on top; once shown, the address goes back to the page itself.
     const settledPath = {
         '/boas-vindas/': `${base}/dashboard`,
         '/sessao-encerrada/': `${base}/login`,
@@ -45,6 +59,18 @@ export function enablePreview(Livewire) {
     fillDemoLogin();
     document.addEventListener('livewire:navigated', fillDemoLogin);
 
+    if (document.querySelector('[data-login-form]')) {
+        prefetch(pages.welcome);
+    }
+
+    ['input', 'change'].forEach((type) => document.addEventListener(type, (event) => {
+        if (! event.target.matches('[data-client-search], [data-client-type]')) {
+            return;
+        }
+
+        filterClients();
+    }, true));
+
     Livewire.hook('request', ({ fail }) => {
         fail(({ preventDefault }) => {
             preventDefault();
@@ -56,6 +82,8 @@ export function enablePreview(Livewire) {
         const signingOut = event.target.matches('form[data-farewell]');
 
         if (signingOut && ! prefersReducedMotion()) {
+            prefetch(pages.signedOut);
+
             return;
         }
 

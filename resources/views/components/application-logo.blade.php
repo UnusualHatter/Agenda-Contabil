@@ -1,4 +1,3 @@
-{{-- Project mark: a coin sign inside two turning arrows, redrawn from the printed material. --}}
 <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" {{ $attributes }}>
     <g class="logo-arrows">
         <path d="M7.1 17.8A18 18 0 0 1 40.9 17.8M37.1 14.6L40.9 17.8L41.8 12.9" />

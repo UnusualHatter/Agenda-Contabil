@@ -20,11 +20,6 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
@@ -54,9 +49,6 @@ class User extends Authenticatable
     }
 
     /**
-     * Users who may own appointments; mirrors the check in
-     * EnsureResponsibleIsAvailable.
-     *
      * @param  Builder<User>  $query
      */
     public function scopeAssignable(Builder $query): void

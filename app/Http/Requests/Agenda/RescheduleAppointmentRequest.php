@@ -18,8 +18,8 @@ class RescheduleAppointmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'starts_at' => ['required', 'date_format:Y-m-d\TH:i:s'],
-            'ends_at' => ['required', 'date_format:Y-m-d\TH:i:s'],
+            'starts_at' => ['required', 'date_format:Y-m-d\TH:i:s', 'after_or_equal:-1 year', 'before_or_equal:+2 years'],
+            'ends_at' => ['required', 'date_format:Y-m-d\TH:i:s', 'after:starts_at'],
         ];
     }
 

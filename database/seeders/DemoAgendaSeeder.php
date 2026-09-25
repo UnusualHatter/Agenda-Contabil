@@ -16,16 +16,12 @@ use App\Support\DisplayTimezone;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Seeder;
 
-/**
- * Demo agenda around today, built through the real actions so conflicts,
- * checklists and history behave as in real use. Never runs in production.
- */
 class DemoAgendaSeeder extends Seeder
 {
     private const CLIENTS = [
         ['individual', 'Joana Lima', null, null, '(51) 99812-4410', 'joana.lima@example.com'],
         ['individual', 'Carlos Eduardo Souza', null, null, '(51) 99701-2280', null],
-        ['organization', 'Teresa Alves Doces', 'Doces da Vó Teresa', '45.123.987/0001-10', '(51) 98455-0192', 'contato@docesdavo.example.com'],
+        ['organization', 'Teresa Alves Doces', 'Doces da Vó Teresa', '45.123.987/0001-70', '(51) 98455-0192', 'contato@docesdavo.example.com'],
         ['organization', 'Associação Comunitária Vila Nova', 'ACVN', null, '(51) 3595-2211', 'acvn@example.org'],
         ['individual', 'Marcos Pereira', null, null, '(51) 99633-8814', 'marcos.p@example.com'],
         ['organization', 'Oficina do Beto Reparos', 'Oficina do Beto', null, '(51) 98122-7765', null],
@@ -80,7 +76,7 @@ class DemoAgendaSeeder extends Seeder
             ['type' => $client[0], 'trade_name' => $client[2], 'document' => $client[3], 'phone' => $client[4], 'email' => $client[5], 'accepts_reminders' => $client[5] !== null],
         ));
 
-        // pt_BR weeks start on Sunday in Carbon; the plan above counts from Monday.
+        // In pt_BR, Carbon weeks start on Sunday.
         $monday = DisplayTimezone::toLocal(now())->startOfWeek(CarbonInterface::MONDAY);
 
         foreach (self::AGENDA as [$offset, $time, $minutes, $clientIndex, $serviceSlug, $responsible, $status]) {
@@ -100,7 +96,6 @@ class DemoAgendaSeeder extends Seeder
                 $changeStatus->handle($team[$responsible], $appointment, $next);
             }
 
-            // Finished appointments had everything delivered; open ones, just the first item.
             $appointment->documents()
                 ->unless($status === AppointmentStatus::Completed, fn ($documents) => $documents->limit(1))
                 ->get()

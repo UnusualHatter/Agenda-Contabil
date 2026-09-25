@@ -1,4 +1,3 @@
-{{-- Runs before the stylesheet so the page never flashes the wrong theme. --}}
 <script nonce="{{ Vite::cspNonce() }}" data-navigate-once>
     (() => {
         const stored = localStorage.getItem('theme');

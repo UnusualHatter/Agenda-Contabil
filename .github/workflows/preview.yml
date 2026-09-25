@@ -1,9 +1,5 @@
 name: Preview
 
-# Publishes a read-only preview of the application on GitHub Pages. The pages
-# are rendered by the application itself (php artisan preview:export) from the
-# demo seed, so the preview never contains real data.
-
 on:
   push:
     branches: [main]

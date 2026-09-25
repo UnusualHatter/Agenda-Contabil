@@ -301,5 +301,9 @@ return [
         'notes' => 'observações',
         'trade_name' => 'nome fantasia',
         'document' => 'CPF/CNPJ',
+        'service_category_id' => 'categoria',
+        'default_duration_minutes' => 'duração',
+        'new_document' => 'documento',
+        'documents' => 'documentos',
     ],
 ];

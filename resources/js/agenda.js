@@ -5,12 +5,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
-// Wall times in and out: the calendar runs in "UTC" so the browser never
-// shifts São Paulo times by its own clock.
+// The calendar runs in "UTC" so the browser never shifts São Paulo times.
 const wallTime = (date) => date.toISOString().slice(0, 19);
 
-// One layout per screen size, first match wins. Tablets get three days so
-// each column stays wide enough to read a name.
 const layouts = [
     {
         query: window.matchMedia('(max-width: 639px)'),
@@ -42,9 +39,6 @@ function node(tag, className, text = '', children = []) {
     return element;
 }
 
-// Each family of views has its own space to work with: a month cell fits a
-// time and a name, a time column fits a small card, the list has a whole row.
-// "09:00 - 10:00" keeps the end in its own span so narrow cards can drop it.
 function timeNode(timeText) {
     const [start, end] = timeText.split(' - ');
 
@@ -76,10 +70,6 @@ const viewFamily = (viewType) => viewType.replace(/(Month|Week|ThreeDay|Day)$/, 
 
 const renderEvent = (arg) => ({ domNodes: renderers[viewFamily(arg.view.type)](arg) });
 
-/**
- * Mounts the calendar on the agenda page and returns the function that takes
- * it down again, called before Livewire navigates away.
- */
 export function mountAgenda(element, navigate) {
     const message = document.querySelector('[data-agenda-message]');
     const filters = {
@@ -125,7 +115,7 @@ export function mountAgenda(element, navigate) {
     }
 
     function openCreateForm(info) {
-        // A click on a month cell has no time; start at 09:00 like the office.
+        // Month cells have no time of day.
         const start = info.allDay ? `${info.startStr}T09:00:00` : wallTime(info.start);
         const params = new URLSearchParams({ inicio: start });
 
@@ -152,7 +142,6 @@ export function mountAgenda(element, navigate) {
         slotEventOverlap: false,
         eventDisplay: 'block',
         eventMinHeight: 28,
-        // Below this height a card shows only the time and the name.
         eventShortHeight: 72,
         allDaySlot: false,
         slotMinTime: '07:00:00',
@@ -161,8 +150,6 @@ export function mountAgenda(element, navigate) {
         snapDuration: '00:15:00',
         nowIndicator: true,
         views: {
-            // The project works Monday to Saturday; the month view keeps the
-            // full week so dates line up with a paper calendar.
             timeGridWeek: { hiddenDays: [0] },
             timeGridThreeDay: { type: 'timeGrid', duration: { days: 3 }, buttonText: '3 dias' },
             dayGridMonth: { dayMaxEvents: 3 },

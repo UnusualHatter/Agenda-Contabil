@@ -11,11 +11,8 @@ use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Period and responsible change together because availability depends on
- * both: checking the new person against the old period (or the old person
- * against the new period) would report conflicts that do not exist.
- */
+// Period and responsible are checked together; checking them one at a time
+// reports conflicts that do not exist.
 final class RescheduleAppointment
 {
     public function __construct(private EnsureResponsibleIsAvailable $ensureResponsibleIsAvailable) {}

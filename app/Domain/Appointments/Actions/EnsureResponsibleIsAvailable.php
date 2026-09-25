@@ -11,18 +11,23 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Call it inside a transaction: the row lock on the
- * responsible user makes concurrent bookings for the same person wait for
- * each other instead of both passing the overlap check.
- */
+// Must run inside a transaction: the lock on the user row makes concurrent
+// bookings for the same person wait instead of both passing the check.
 final class EnsureResponsibleIsAvailable
 {
+    public const MAX_HOURS = 12;
+
     public function handle(User $responsible, CarbonInterface $startsAt, CarbonInterface $endsAt, ?Appointment $ignore = null): void
     {
         if ($endsAt->lessThanOrEqualTo($startsAt)) {
             throw ValidationException::withMessages([
                 'ends_at' => __('appointments.errors.invalid_period'),
+            ]);
+        }
+
+        if ($startsAt->diffInMinutes($endsAt) > self::MAX_HOURS * 60) {
+            throw ValidationException::withMessages([
+                'ends_at' => __('appointments.errors.too_long', ['hours' => self::MAX_HOURS]),
             ]);
         }
 

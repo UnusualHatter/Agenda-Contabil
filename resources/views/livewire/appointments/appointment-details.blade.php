@@ -142,7 +142,6 @@
                         @foreach ($documents as $document)
                             <li wire:key="document-{{ $document->id }}" x-data="{ received: @js($document->isReceived()) }">
                                 @if ($canUpdate)
-                                    {{-- Flips at once on click; the server call follows with the same state. --}}
                                     <button type="button" role="checkbox"
                                             x-bind:aria-checked="received.toString()"
                                             x-on:click="received = ! received; $wire.markDocument({{ $document->id }}, received)"
@@ -162,35 +161,65 @@
             </x-card>
         </div>
 
-        <x-card class="self-start">
-            <h2 class="text-2xl">{{ __('appointments.show.history') }}</h2>
-            <ol class="mt-4 space-y-4 border-s border-line ps-5">
-                @foreach ($appointment->activities as $activity)
-                    @php
-                        $dot = match ($activity->event_type) {
-                            App\Domain\Appointments\Enums\ActivityType::Created => 'bg-primary',
-                            App\Domain\Appointments\Enums\ActivityType::Rescheduled => 'bg-ochre',
-                            App\Domain\Appointments\Enums\ActivityType::StatusChanged => 'bg-moss',
-                            App\Domain\Appointments\Enums\ActivityType::ResponsibleChanged => 'bg-plum',
-                            App\Domain\Appointments\Enums\ActivityType::Cancelled => 'bg-danger',
-                        };
-                    @endphp
-                    <li class="relative text-sm" wire:key="activity-{{ $activity->id }}">
-                        <span class="absolute -start-[1.6rem] top-1 size-2.5 rounded-full ring-4 ring-surface {{ $dot }}" aria-hidden="true"></span>
-                        <p class="font-medium text-ink">{{ $activity->event_type->label() }}</p>
-                        @php($change = $activity->changeSummary($usersById))
-                        @if ($change)
-                            <p class="text-ink-muted">{{ $change }}</p>
-                        @endif
-                        <p class="text-xs text-ink-muted">
-                            {{ App\Support\DisplayTimezone::toLocal($activity->created_at)->format('d/m/Y H:i') }}
-                            @if ($activity->user)
-                                · {{ __('appointments.show.by', ['name' => $activity->user->name]) }}
+        <div class="space-y-6 self-start">
+            @if ($appointment->status->canBeRescheduled())
+                <x-card>
+                    <h2 class="text-2xl">{{ __('reminders.card.title') }}</h2>
+                    <p class="mt-2 text-sm text-ink-muted">
+                        {{ match (true) {
+                            ! $appointment->client->accepts_reminders => __('reminders.card.no_consent'),
+                            $appointment->reminder_sent_at !== null => __('reminders.card.sent_at', ['date' => App\Support\DisplayTimezone::toLocal($appointment->reminder_sent_at)->format('d/m \à\s H:i')]),
+                            blank($appointment->client->email) => __('reminders.card.no_email'),
+                            default => __('reminders.card.scheduled'),
+                        } }}
+                    </p>
+
+                    @if ($canUpdate && $appointment->client->accepts_reminders)
+                        <div class="mt-4 flex flex-wrap gap-2">
+                            @if ($appointment->client->canReceiveReminders())
+                                <x-secondary-button wire:click="sendReminder" wire:loading.attr="disabled" wire:target="sendReminder">
+                                    {{ $appointment->reminder_sent_at ? __('reminders.card.send_again') : __('reminders.card.send_now') }}
+                                </x-secondary-button>
                             @endif
-                        </p>
-                    </li>
-                @endforeach
-            </ol>
-        </x-card>
+                            @if ($whatsAppUrl)
+                                <a href="{{ $whatsAppUrl }}" target="_blank" rel="noopener noreferrer"
+                                   class="press inline-flex min-h-11 items-center justify-center gap-2 rounded-full bg-moss-soft px-5 py-2.5 text-sm font-semibold text-moss hover:opacity-90">
+                                    {{ __('reminders.card.whatsapp') }}
+                                </a>
+                            @endif
+                        </div>
+                    @endif
+                </x-card>
+            @endif
+
+            <x-card>
+                <h2 class="text-2xl">{{ __('appointments.show.history') }}</h2>
+                <ol class="mt-4 space-y-4 border-s border-line ps-5">
+                    @foreach ($appointment->activities as $activity)
+                        @php
+                            $dot = match ($activity->event_type) {
+                                App\Domain\Appointments\Enums\ActivityType::Created => 'bg-primary',
+                                App\Domain\Appointments\Enums\ActivityType::Rescheduled => 'bg-ochre',
+                                App\Domain\Appointments\Enums\ActivityType::StatusChanged => 'bg-moss',
+                                App\Domain\Appointments\Enums\ActivityType::ResponsibleChanged => 'bg-plum',
+                                App\Domain\Appointments\Enums\ActivityType::Cancelled => 'bg-danger',
+                            };
+                        @endphp
+                        <li class="relative text-sm" wire:key="activity-{{ $activity->id }}">
+                            <span class="absolute -start-[1.6rem] top-1 size-2.5 rounded-full ring-4 ring-surface {{ $dot }}" aria-hidden="true"></span>
+                            <p class="font-medium text-ink">{{ $activity->event_type->label() }}</p>
+                            @php($change = $activity->changeSummary($usersById))
+                            @if ($change)
+                                <p class="text-ink-muted">{{ $change }}</p>
+                            @endif
+                            <p class="text-xs text-ink-muted">
+                                {{ App\Support\DisplayTimezone::toLocal($activity->created_at)->format('d/m/Y H:i') }}
+                                · {{ $activity->user ? __('appointments.show.by', ['name' => $activity->user->name]) : __('appointments.show.by_client') }}
+                            </p>
+                        </li>
+                    @endforeach
+                </ol>
+            </x-card>
+        </div>
     </div>
 </div>

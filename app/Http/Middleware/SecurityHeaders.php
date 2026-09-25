@@ -31,9 +31,7 @@ final class SecurityHeaders
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 
-        // Pages behind login carry personal data: never keep them in the
-        // browser cache, so "back" after logging out on a shared computer
-        // shows nothing.
+        // "Back" after logging out on a shared computer must not show personal data.
         if ($request->user() !== null) {
             $response->headers->set('Cache-Control', 'no-store, private');
         }
@@ -47,13 +45,11 @@ final class SecurityHeaders
 
         return implode('; ', [
             "default-src 'self'",
-            // Alpine (bundled with Livewire) evaluates x-* expressions with
-            // new Function, hence unsafe-eval; inline scripts still need the nonce.
+            // Alpine evaluates x-* expressions with new Function.
             "script-src 'self' 'nonce-".Vite::cspNonce()."' 'unsafe-eval' {$dev}",
-            // Style attributes are set by Alpine and FullCalendar at runtime.
             "style-src 'self' 'unsafe-inline' {$dev}",
             "img-src 'self' data:",
-            // FullCalendar ships its arrow icons as an inline data: font.
+            // FullCalendar's icon font is inlined as data:.
             "font-src 'self' data: {$dev}",
             "connect-src 'self' {$dev}".($dev === '' ? '' : ' '.str_replace('http', 'ws', $dev)),
             "object-src 'none'",

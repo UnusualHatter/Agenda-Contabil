@@ -54,8 +54,7 @@ final class ScheduleAppointment
                 'created_by' => $author->id,
             ]);
 
-            // A copy, not a reference: editing the service checklist later
-            // must not rewrite what was asked of people already booked.
+            // Copied, so later edits to the service do not change booked appointments.
             $appointment->documents()->createMany(
                 $service->documents->map(fn (ServiceDocument $document): array => [
                     'name' => $document->name,

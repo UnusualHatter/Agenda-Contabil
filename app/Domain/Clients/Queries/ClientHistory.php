@@ -9,10 +9,6 @@ use App\Models\Client;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
-/**
- * Deactivated services stay visible because the relation does not filter
- * on `services.active`.
- */
 final class ClientHistory
 {
     /**

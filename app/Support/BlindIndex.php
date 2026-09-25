@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace App\Support;
 
-/**
- * Searchable fingerprint of an encrypted value. The database only ever sees
- * the HMAC, so an exact lookup works without storing the value in clear.
- */
+// HMAC of an encrypted value, for exact lookups without storing it in clear.
 final class BlindIndex
 {
     public static function forDocument(?string $document): ?string

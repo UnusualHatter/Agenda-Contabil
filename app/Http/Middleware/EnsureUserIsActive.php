@@ -9,10 +9,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Login already refuses deactivated accounts; this ends sessions that were
- * open when the account was deactivated.
- */
 final class EnsureUserIsActive
 {
     public function handle(Request $request, Closure $next): Response

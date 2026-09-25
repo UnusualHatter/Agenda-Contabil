@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace App\Domain\Users\Enums;
 
-/**
- * One role per user, checked through policies rather than by hiding buttons.
- */
 enum UserRole: string
 {
     case Admin = 'admin';

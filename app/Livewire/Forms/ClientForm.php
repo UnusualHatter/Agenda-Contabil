@@ -6,13 +6,12 @@ namespace App\Livewire\Forms;
 
 use App\Domain\Clients\Enums\ClientType;
 use App\Models\Client;
+use App\Rules\BrazilianDocument;
+use App\Support\BlindIndex;
+use Closure;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
-/**
- * Shared by the client page and the quick "new client" panel inside the
- * appointment form, so both validate the same way.
- */
 class ClientForm extends Form
 {
     public ?Client $client = null;
@@ -60,13 +59,39 @@ class ClientForm extends Form
             'type' => ['required', Rule::enum(ClientType::class)],
             'name' => ['required', 'string', 'max:255'],
             'trade_name' => ['nullable', 'string', 'max:255'],
-            'document' => ['nullable', 'string', 'max:20'],
-            'phone' => ['nullable', 'string', 'max:30', 'required_without:email'],
+            'document' => [
+                'nullable', 'string', 'max:20',
+                new BrazilianDocument(ClientType::tryFrom($this->type) ?? ClientType::Individual),
+                $this->documentIsFree(...),
+            ],
+            'phone' => ['nullable', 'string', 'max:30', 'required_without:email', $this->phoneHasDigits(...)],
             'email' => ['nullable', 'email', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],
             'accepts_reminders' => ['boolean'],
             'active' => ['boolean'],
         ];
+    }
+
+    private function documentIsFree(string $attribute, mixed $value, Closure $fail): void
+    {
+        $taken = Client::query()
+            ->where('document_index', BlindIndex::forDocument((string) $value))
+            ->when($this->client, fn ($query) => $query->whereKeyNot($this->client->id))
+            ->exists();
+
+        if ($taken) {
+            $fail(__('clients.errors.document_taken'));
+        }
+    }
+
+    // Landline or mobile with area code, optionally with the country code.
+    private function phoneHasDigits(string $attribute, mixed $value, Closure $fail): void
+    {
+        $digits = strlen(preg_replace('/\D/', '', (string) $value));
+
+        if ($digits < 10 || $digits > 13) {
+            $fail(__('clients.errors.invalid_phone'));
+        }
     }
 
     protected function messages(): array

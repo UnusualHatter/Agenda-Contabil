@@ -29,7 +29,6 @@ class ClientPolicy
         return $user->canWrite();
     }
 
-    // A client with history is deactivated, never deleted.
     public function delete(User $user, Client $client): bool
     {
         return $user->active

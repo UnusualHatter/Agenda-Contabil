@@ -11,11 +11,6 @@ class DatabaseSeeder extends Seeder
 {
     use WithoutModelEvents;
 
-    /**
-     * Seed the application's database.
-     *
-     * Seeders must stay idempotent: running them twice may not duplicate rows.
-     */
     public function run(): void
     {
         $this->call([

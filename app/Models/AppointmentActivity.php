@@ -16,7 +16,6 @@ use Illuminate\Support\Collection;
 #[Fillable(['appointment_id', 'user_id', 'event_type', 'old_values', 'new_values'])]
 class AppointmentActivity extends Model
 {
-    // The log is append-only, so there is nothing to track in updated_at.
     const UPDATED_AT = null;
 
     protected function casts(): array
@@ -45,11 +44,6 @@ class AppointmentActivity extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * "Before → after" line for the history panel.
-     *
-     * @param  Collection<int, string>  $userNames  names by id, for responsible changes
-     */
     public function changeSummary(Collection $userNames): ?string
     {
         $old = $this->old_values ?? [];

@@ -9,10 +9,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
-/**
- * Local accounts used while developing. Credentials are documented in the
- * README; this seeder must never run in production.
- */
 class DevelopmentUserSeeder extends Seeder
 {
     public function run(): void

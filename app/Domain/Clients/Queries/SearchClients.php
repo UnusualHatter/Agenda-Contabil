@@ -11,14 +11,13 @@ use Illuminate\Database\Eloquent\Builder;
 final class SearchClients
 {
     /**
-     * Phone is compared by digits only, so "51 99999" finds "(51) 99999-0000".
-     * The document is encrypted, so it is matched whole, through its index.
+     * The document is encrypted, so it only matches as a whole, through its index.
      *
      * @return Builder<Client>
      */
     public static function query(string $term): Builder
     {
-        $term = trim($term);
+        $term = mb_substr(trim($term), 0, 100);
         $like = '%'.addcslashes($term, '%_\\').'%';
         $digits = preg_replace('/\D/', '', $term);
 

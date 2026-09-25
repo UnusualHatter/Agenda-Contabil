@@ -21,7 +21,7 @@ function playFarewell(form, origin) {
     document.body.append(curtain);
 
     const leave = () => {
-        // Cancelable so the static preview can go to the login page instead.
+        // The static preview cancels it.
         if (form.dispatchEvent(new CustomEvent('farewell:done', { bubbles: true, cancelable: true }))) {
             form.submit();
         }
@@ -31,8 +31,6 @@ function playFarewell(form, origin) {
     window.setTimeout(leave, FAREWELL_DURATION);
 }
 
-// Log-out forms are marked with data-farewell; the session is ended only
-// after the closing animation, which also works as a "you are leaving" cue.
 export function startCurtains() {
     document.addEventListener('submit', (event) => {
         const form = event.target.closest('form[data-farewell]');

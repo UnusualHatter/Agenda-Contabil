@@ -7,9 +7,6 @@ namespace App\Policies;
 use App\Models\Service;
 use App\Models\User;
 
-/**
- * No delete ability: services are deactivated so history keeps its labels.
- */
 class ServicePolicy
 {
     public function viewAny(User $user): bool

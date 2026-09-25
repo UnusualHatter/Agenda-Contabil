@@ -18,9 +18,6 @@ enum AppointmentStatus: string
         return __("appointments.status.{$this->value}");
     }
 
-    /**
-     * Verb for the button that moves an appointment into this status.
-     */
     public function actionLabel(): string
     {
         return __("appointments.transition.{$this->value}");
@@ -45,8 +42,6 @@ enum AppointmentStatus: string
     }
 
     /**
-     * Statuses that occupy the responsible person's time.
-     *
      * @return list<self>
      */
     public static function blocking(): array

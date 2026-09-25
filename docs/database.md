@@ -64,11 +64,30 @@ exibição (RF-021). `notes` e `service_details` são criptografados. Índices:
 `starts_at`, `status`, `(responsible_user_id, starts_at)` e
 `(client_id, starts_at)`.
 
+`reminder_sent_at` marca o envio do lembrete por e-mail; o índice
+`(reminder_sent_at, starts_at)` atende a busca do agendador por atendimentos
+ainda sem lembrete nas próximas 24 horas
+([ADR 0008](decisions/0008-reminders.md)).
+
 ## Planejado (não implementado)
 
-- `appointments.reminder_sent_at` — Milestone 4 (lembretes).
 - `calendar_connections` e `external_event_links` — **somente** quando a
   primeira integração real for implementada (Milestone 7).
+
+## Segurança no banco
+
+- `data_audits` — trilha de auditoria preenchida por triggers em `clients` e
+  `users`: operação, colunas alteradas (sem valores), usuário da aplicação e
+  papel do banco. Só aceita inclusões.
+- `appointment_activities` também só aceita inclusões; `appointments` não
+  aceita `DELETE` físico.
+- `clients.reminders_consented_at` guarda quando o atendido autorizou
+  lembretes (LGPD).
+- `appointment_facts` — view para relatórios, sem nome, contato, documento ou
+  observações.
+- Papéis `agenda_app` e `agenda_reports` em `database/sql/privileges.sql`.
+
+Ver [ADR 0009](decisions/0009-database-security.md).
 
 ## Regras garantidas pelo banco
 
@@ -76,6 +95,7 @@ exibição (RF-021). `notes` e `service_details` são criptografados. Índices:
 - `appointments_no_overlap`: *exclusion constraint* com `btree_gist` que impede
   dois atendimentos ativos sobrepostos para o mesmo responsável (RD-002). Ver
   [ADR 0004](decisions/0004-appointment-overlap-enforcement.md).
+- `clients_document_index_unique`: um CPF/CNPJ por atendido ativo.
 - Chaves estrangeiras com `restrictOnDelete` para atendido, serviço e
   responsável: ninguém some do histórico por acidente (RD-005, RD-007).
 

@@ -4,17 +4,10 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
-use App\Models\Appointment;
 use App\Support\DisplayTimezone;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-/**
- * An appointment in the shape FullCalendar expects, with São Paulo wall
- * times and no offset.
- *
- * @mixin Appointment
- */
 class AgendaEventResource extends JsonResource
 {
     public function toArray(Request $request): array

@@ -1,8 +1,8 @@
 <div class="space-y-4">
     <div class="flex flex-col gap-3 sm:flex-row">
-        <x-text-input type="search" wire:model.live.debounce.300ms="search" :placeholder="__('clients.index.search')"
+        <x-text-input type="search" data-client-search wire:model.live.debounce.300ms="search" :placeholder="__('clients.index.search')"
                       :aria-label="__('clients.index.search')" class="w-full sm:flex-1" />
-        <x-select-input wire:model.live="type" :aria-label="__('clients.fields.type')">
+        <x-select-input data-client-type wire:model.live="type" :aria-label="__('clients.fields.type')">
             <option value="">{{ __('clients.index.all_types') }}</option>
             @foreach (App\Domain\Clients\Enums\ClientType::cases() as $clientType)
                 <option value="{{ $clientType->value }}">{{ $clientType->label() }}</option>
@@ -13,7 +13,7 @@
     <x-card padding="tight">
         <ul class="space-y-1">
             @forelse ($clients as $client)
-                <li wire:key="client-{{ $client->id }}">
+                <li wire:key="client-{{ $client->id }}" data-client-row="{{ $client->type->value }}">
                     <x-disclosure :id="'client-'.$client->id.'-details'" :label="__('clients.index.details_of', ['name' => $client->name])">
                         <x-slot name="summary">
                             <span class="min-w-0 flex-1">

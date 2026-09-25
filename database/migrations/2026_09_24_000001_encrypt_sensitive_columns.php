@@ -7,11 +7,6 @@ use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-/**
- * CPF/CNPJ and free-text notes (which tend to describe someone's financial
- * situation) are encrypted at rest. The document keeps an HMAC next to it so
- * it can still be found by exact value.
- */
 return new class extends Migration
 {
     public function up(): void

@@ -23,10 +23,7 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-/**
- * Property names match ScheduleAppointment's keys, so a rule broken inside
- * the action shows up under the right field without any mapping.
- */
+// Property names match ScheduleAppointment's keys, so its errors land on the right field.
 class CreateAppointment extends Component
 {
     #[Locked]
@@ -164,9 +161,6 @@ class CreateAppointment extends Component
             ->format('H:i');
     }
 
-    /**
-     * Moving the start keeps the duration the person already chose.
-     */
     public function updatingStartTime(string $value): void
     {
         if (! $this->isTime($value) || ! $this->isTime($this->start_time) || ! $this->isTime($this->end_time)) {
@@ -184,13 +178,13 @@ class CreateAppointment extends Component
         $this->authorize('create', Appointment::class);
 
         $this->validate([
-            'client_id' => ['required', 'integer'],
-            'service_id' => ['required', 'integer'],
+            'client_id' => ['required', 'integer', Rule::exists('clients', 'id')->where('active', true)->whereNull('deleted_at')],
+            'service_id' => ['required', 'integer', Rule::exists('services', 'id')],
             'service_details' => ['nullable', 'string', 'max:2000'],
-            'date' => ['required', 'date_format:Y-m-d'],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:-1 year', 'before_or_equal:+2 years'],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['required', 'date_format:H:i'],
-            'responsible_user_id' => ['required', 'integer'],
+            'responsible_user_id' => ['required', 'integer', Rule::exists('users', 'id')],
             'location_type' => ['nullable', Rule::enum(LocationType::class)],
             'location' => ['nullable', 'string', 'max:255'],
             'notes' => ['nullable', 'string', 'max:2000'],

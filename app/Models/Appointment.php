@@ -36,6 +36,7 @@ class Appointment extends Model
             'ends_at' => 'datetime',
             'status' => AppointmentStatus::class,
             'location_type' => LocationType::class,
+            'reminder_sent_at' => 'datetime',
             'service_details' => 'encrypted',
             'notes' => 'encrypted',
         ];
@@ -81,11 +82,6 @@ class Appointment extends Model
         return $this->hasMany(AppointmentActivity::class)->latest('created_at')->latest('id');
     }
 
-    /**
-     * Derived from the local date on every read, never stored.
-     *
-     * @return Attribute<string, never>
-     */
     protected function weekday(): Attribute
     {
         return Attribute::get(
@@ -124,8 +120,7 @@ class Appointment extends Model
     }
 
     /**
-     * Same rule as the database constraint: periods touching at the edge
-     * (one ends at 10:00, the next starts at 10:00) do not overlap.
+     * Periods that only touch (10:00–11:00 and 11:00–12:00) do not overlap.
      *
      * @param  Builder<Appointment>  $query
      */

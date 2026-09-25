@@ -13,9 +13,6 @@ use Illuminate\Database\Eloquent\Collection;
 final class AgendaAppointments
 {
     /**
-     * Cancelled and no-show appointments are hidden unless asked for: they
-     * free the slot, and showing them by default makes the week look full.
-     *
      * @return Collection<int, Appointment>
      */
     public static function between(

@@ -11,13 +11,12 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
-/**
- * Covers confirm, start, complete, cancel and no-show. No transition goes
- * from a free status back to a blocking one, so no conflict check is needed.
- */
 final class ChangeAppointmentStatus
 {
-    public function handle(User $author, Appointment $appointment, AppointmentStatus $next): Appointment
+    /**
+     * A null author means the client answered through the reminder link.
+     */
+    public function handle(?User $author, Appointment $appointment, AppointmentStatus $next): Appointment
     {
         $current = $appointment->status;
 
@@ -33,7 +32,7 @@ final class ChangeAppointmentStatus
         return DB::transaction(function () use ($author, $appointment, $current, $next): Appointment {
             $appointment->update([
                 'status' => $next,
-                'updated_by' => $author->id,
+                'updated_by' => $author?->id,
             ]);
 
             $appointment->recordActivity(

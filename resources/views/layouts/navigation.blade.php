@@ -14,6 +14,11 @@
                 <x-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
                     {{ __('nav.clients') }}
                 </x-nav-link>
+                @can('create', App\Models\Service::class)
+                    <x-nav-link :href="route('services.index')" :active="request()->routeIs('services.*')">
+                        {{ __('nav.services') }}
+                    </x-nav-link>
+                @endcan
             </div>
         </div>
 
@@ -70,6 +75,11 @@
             <x-responsive-nav-link :href="route('clients.index')" :active="request()->routeIs('clients.*')">
                 {{ __('nav.clients') }}
             </x-responsive-nav-link>
+            @can('create', App\Models\Service::class)
+                <x-responsive-nav-link :href="route('services.index')" :active="request()->routeIs('services.*')">
+                    {{ __('nav.services') }}
+                </x-responsive-nav-link>
+            @endcan
         </div>
 
         <div class="border-t border-line pt-4">

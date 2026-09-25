@@ -1,7 +1,6 @@
 @props(['status'])
 
 @php
-    // Colour always comes with the text label, never alone.
     $tone = match ($status) {
         App\Domain\Appointments\Enums\AppointmentStatus::Scheduled => 'bg-primary-soft text-primary',
         App\Domain\Appointments\Enums\AppointmentStatus::Confirmed => 'bg-moss-soft text-moss',

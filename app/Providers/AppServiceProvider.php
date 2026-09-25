@@ -14,8 +14,6 @@ class AppServiceProvider extends ServiceProvider
     {
         $production = $this->app->isProduction();
 
-        // Lazy loading, silently dropped attributes and typos in attribute
-        // names fail loudly while developing instead of shipping.
         Model::shouldBeStrict(! $production);
 
         DB::prohibitDestructiveCommands($production);

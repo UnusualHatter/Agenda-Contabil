@@ -7,8 +7,10 @@ use App\Http\Controllers\AppointmentController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReminderResponseController;
 use App\Models\Appointment;
 use App\Models\Client;
+use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -17,6 +19,11 @@ Route::get('/', function () {
         ? redirect()->route('dashboard')
         : redirect()->route('login');
 })->name('home');
+
+Route::middleware(['signed', 'throttle:20,1'])->controller(ReminderResponseController::class)->group(function () {
+    Route::get('/confirmacao/{appointment}', 'show')->name('appointments.respond');
+    Route::post('/confirmacao/{appointment}', 'store');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
@@ -41,6 +48,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/atendidos/{client}', 'show')->name('clients.show')->can('view', 'client');
         Route::get('/atendidos/{client}/editar', 'edit')->name('clients.edit')->can('update', 'client');
     });
+
+    Route::view('/configuracoes/servicos', 'settings.services')->name('services.index')->can('create', Service::class);
 });
 
 require __DIR__.'/auth.php';

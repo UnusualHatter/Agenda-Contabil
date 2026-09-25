@@ -12,7 +12,7 @@ Requisitos completos: [`PRD.md`](PRD.md).
 
 ## Status
 
-**Milestones 1 a 3** concluídos:
+**Milestones 1 a 4** concluídos:
 
 - domínio: atendidos, catálogo de serviços com checklist de documentos,
   conflito de horário garantido também pelo banco, status e auditoria;
@@ -20,10 +20,14 @@ Requisitos completos: [`PRD.md`](PRD.md).
   que abrem no próprio lugar;
 - agenda com FullCalendar (mês, semana, 3 dias, dia e lista): clicar para
   agendar, arrastar para reagendar;
+- catálogo de serviços e checklists editável pelo administrador
+  (`/configuracoes/servicos`);
+- lembretes: e-mail automático 24 h antes, com os documentos a trazer e um
+  link para o atendido confirmar ou cancelar; botão de WhatsApp;
 - identidade visual serifada com tema claro/escuro, navegação sem recarregar
   a página e proteção de dados pessoais (ver *Segurança* abaixo).
 
-Próximos passos: lembretes (Milestone 4) e painel de impacto (Milestone 5).
+Próximo passo: painel de impacto e relatórios (Milestone 5).
 Ver [`docs/architecture.md`](docs/architecture.md).
 
 Em desenvolvimento, `php artisan migrate:fresh --seed` também cria uma agenda
@@ -161,11 +165,36 @@ UTC, exibição em `America/Sao_Paulo`
   contas desativadas perdem a sessão no próximo clique.
 - Senhas com no mínimo 10 caracteres, letras e números; em produção, senhas
   que aparecem em vazamentos conhecidos são recusadas.
-- Limite de tentativas no login e nas rotas da agenda.
+- Limite de tentativas no login e nas rotas da agenda; a recuperação de senha
+  responde igual para e-mails com e sem conta.
+- CPF/CNPJ validado pelos dígitos verificadores e único entre os atendidos.
+- No banco: histórico e auditoria só de inclusão, atendimentos nunca apagados
+  fisicamente e registro de quem alterou dados de atendidos e usuários
+  (triggers), além de papéis com privilégio mínimo.
 
-Detalhes em [ADR 0007](docs/decisions/0007-security-and-data-protection.md).
+Detalhes em [ADR 0007](docs/decisions/0007-security-and-data-protection.md)
+e [ADR 0009](docs/decisions/0009-database-security.md).
+
+**Banco em produção:** depois das migrations, aplique os papéis com
+`psql -d agenda_contabil -v owner=<dono> -v app_password='…' -v reports_password='…' -f database/sql/privileges.sql`.
+A aplicação passa a conectar como `agenda_app`; as migrations continuam
+rodando com o dono (`DB_USERNAME=<dono> php artisan migrate --force`).
 Em produção, defina `APP_ENV=production`, `APP_DEBUG=false` e
 `SESSION_SECURE_COOKIE=true`, e sirva a aplicação apenas por HTTPS.
+
+## Lembretes em produção
+
+Os lembretes dependem de três coisas no servidor:
+
+- `APP_URL` com o endereço público: os links do e-mail são assinados com ele e
+  deixam de valer se o endereço mudar;
+- o agendador do Laravel no cron (`* * * * * php artisan schedule:run`), que
+  roda `appointments:send-reminders` a cada 15 minutos;
+- um worker de fila (`php artisan queue:work`), que envia os e-mails, e as
+  variáveis `MAIL_*` de um servidor SMTP.
+
+Em desenvolvimento os e-mails vão para `storage/logs/laravel.log`
+(`MAIL_MAILER=log`) e `composer dev` já inicia a fila.
 
 ## Prévia no GitHub Pages
 

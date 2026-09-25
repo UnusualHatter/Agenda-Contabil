@@ -8,10 +8,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Private areas require authentication and there is no public
- * self-registration.
- */
 class AccessControlTest extends TestCase
 {
     use RefreshDatabase;
